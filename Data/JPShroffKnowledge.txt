@@ -1,0 +1,209 @@
+﻿KNOWLEDGE BASE FOR AI CHATBOT
+
+===============================
+JP SHROFF INFORMATION
+===============================
+
+Full Name:
+Jaiprakash Pravinchandra Shroff
+
+Jaiprakash Pravinchandra Shroff is associated with the Shroff Group.
+His areas of work include construction, real estate development,
+sustainability and skill development.
+
+Education:
+- B.E. Civil Engineering from College of Engineering Pune (COEP)
+- Management qualification
+- LL.B. from ILS College, Pune
+
+Shroff Group:
+- The Shroff Group was established in 1958.
+- The group is associated with construction, real estate development,
+  sustainability consulting and manufacturing.
+
+Skill Development:
+- JP Shroff has been associated with skill development initiatives.
+- He has been involved in training and development related to
+  construction skills.
+
+Social Initiatives:
+- The JP Shroff Foundation is associated with initiatives in
+  healthcare, education and livelihood.
+
+Awards and Recognition:
+- Glory of India Award - 2009
+- Nirman Ratna / B. G. Shirke Lifetime Achievement Award - 2023
+- Suryadatta National Lifetime Achievement Award - 2024
+
+
+================================
+OUR CLASS INFORMATION
+================================
+
+Our class provides training in four major areas:
+
+1. Data Analyst
+2. Digital Marketing
+3. App Development
+4. Web Development
+
+
+================================
+DATA ANALYST COURSE
+================================
+
+The Data Analyst course is designed to teach students how to
+work with data, analyze information and create useful reports.
+
+Topics covered:
+- Data Analytics Basics
+- Microsoft Excel
+- Data Cleaning
+- SQL
+- Database Queries
+- Data Analysis
+- Charts and Reports
+- Power BI
+- Data Visualization
+- Dashboard Basics
+- Practical Exercises
+- Project-based Learning
+
+If a user asks:
+"What is Data Analytics?"
+"What does a Data Analyst do?"
+"What is included in the Data Analyst course?"
+"What will I learn in Data Analyst?"
+
+The chatbot should explain the Data Analyst course using
+the information available in this knowledge base.
+
+
+================================
+DIGITAL MARKETING COURSE
+================================
+
+The Digital Marketing course teaches the fundamentals of
+marketing products and services through digital channels.
+
+Topics covered:
+- Digital Marketing Basics
+- Search Engine Optimization (SEO)
+- Social Media Marketing
+- Content Marketing
+- Email Marketing
+- Online Promotion
+- Digital Campaign Concepts
+- Digital Marketing Strategy
+- Basic Performance Analysis
+
+If a user asks:
+"What is Digital Marketing?"
+"What is SEO?"
+"What will I learn in Digital Marketing?"
+"What is included in the Digital Marketing course?"
+
+The chatbot should explain the Digital Marketing course using
+the information available in this knowledge base.
+
+
+================================
+APP DEVELOPMENT COURSE
+================================
+
+The App Development course teaches students the fundamentals
+of developing applications.
+
+Topics covered:
+- Application Development Basics
+- Programming Fundamentals
+- Application Logic
+- User Interface Design
+- API Integration
+- Database Connectivity
+- Testing
+- Debugging
+- Practical Application Development
+- Project Development
+
+If a user asks:
+"What is App Development?"
+"How are applications developed?"
+"What will I learn in App Development?"
+"What is included in the App Development course?"
+
+The chatbot should explain the App Development course using
+the information available in this knowledge base.
+
+
+================================
+WEB DEVELOPMENT COURSE
+================================
+
+The Web Development course teaches students how to create
+and develop websites and web applications.
+
+Topics covered:
+- HTML
+- CSS
+- JavaScript
+- Frontend Development
+- Backend Development Concepts
+- API Integration
+- Database Integration
+- Website Development
+- Web Application Development
+- Practical Projects
+
+If a user asks:
+"What is Web Development?"
+"What is HTML?"
+"What is CSS?"
+"What is JavaScript?"
+"What will I learn in Web Development?"
+"What is included in the Web Development course?"
+
+The chatbot should explain the Web Development course using
+the information available in this knowledge base.
+
+
+================================
+CHATBOT ANSWERING RULES
+================================
+
+The AI chatbot must use this knowledge base when answering
+questions related to JP Shroff or our classes.
+
+If the user asks about JP Shroff:
+Use the JP Shroff information from this file.
+
+If the user asks about our class:
+Explain the available courses:
+- Data Analyst
+- Digital Marketing
+- App Development
+- Web Development
+
+If the user asks about a specific course:
+Provide information from that course section.
+
+The chatbot should give answers in a simple and clear way.
+
+The chatbot should not invent information.
+
+Do not invent:
+- Fees
+- Class timings
+- Class address
+- Trainer names
+- Contact numbers
+- Placement guarantees
+- Course duration
+
+If any of these details are not available in this file,
+the chatbot should say that the information is not available
+in the knowledge base.
+
+If the user asks something that is not related to the
+knowledge base, the chatbot can answer normally using
+its general AI knowledge.
