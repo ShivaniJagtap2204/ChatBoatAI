@@ -25,7 +25,7 @@ namespace ChatBoatAI.Services
         // Read knowledge from TXT file
         private string GetKnowledge()
         {
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "JPShroffKnowledge.txt");
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "KnowledgeBase.txt");
 
             if (!File.Exists(filePath))
             {
@@ -82,7 +82,6 @@ KNOWLEDGE BASE:
 USER QUESTION: {trimmedMessage}
 
 Instructions:
-- If the question is about JP Shroff, use the knowledge base.
 - If the question is about our class, use the knowledge base.
 - If the question is about Data Analyst, use the Data Analyst section.
 - If the question is about Digital Marketing, use the Digital Marketing section.
@@ -235,13 +234,13 @@ Instructions:
             if (simple == "hi" || simple == "hello" || simple == "hey" || simple == "hii" || simple == "hiii" ||
                 simple == "namaste" || simple == "good morning" || simple == "good evening" || simple == "good afternoon")
             {
-                reply = "Hello! 👋 I'm your NMD AI Assistant. How can I help you today? You can ask me about our courses, JP Shroff, Web Development, Data Analytics, Digital Marketing, and more!";
+                reply = "Hello! 👋 I'm your NMD AI Assistant. How can I help you today? You can ask me about our courses including Web Development, Data Analytics, Digital Marketing, App Development, and more!";
                 return true;
             }
 
             if (simple == "who are you" || simple == "what is your name" || simple == "tu kon ahes")
             {
-                reply = "I'm NMD AI Assistant, created to answer your questions regarding JP Shroff and our courses including Web Development, Data Analyst, App Development, and Digital Marketing!";
+                reply = "I'm NMD AI Assistant, created to answer your questions regarding our courses including Web Development, Data Analyst, App Development, and Digital Marketing!";
                 return true;
             }
 

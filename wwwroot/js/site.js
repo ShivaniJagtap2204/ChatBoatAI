@@ -1,4 +1,4 @@
-﻿const input = document.getElementById("userInput");
+const input = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 const messages = document.getElementById("chatMessages");
 
@@ -124,8 +124,8 @@ if (clearChatBtn) {
                         📚 Courses
                     </button>
 
-                    <button onclick="sendSuggestion('Tell me about JP Shroff')">
-                        💡 About JP Shroff
+                    <button onclick="sendSuggestion('Tell me about Data Analytics')">
+                        📊 Data Analytics
                     </button>
 
                     <button onclick="sendSuggestion('Tell me about Web Development')">

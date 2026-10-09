@@ -1,0 +1,173 @@
+KNOWLEDGE BASE FOR AI CHATBOT
+
+================================
+OUR CLASS INFORMATION
+================================
+
+Our class provides training in four major areas:
+
+1. Data Analyst
+2. Digital Marketing
+3. App Development
+4. Web Development
+
+
+================================
+DATA ANALYST COURSE
+================================
+
+The Data Analyst course is designed to teach students how to
+work with data, analyze information and create useful reports.
+
+Topics covered:
+- Data Analytics Basics
+- Microsoft Excel
+- Data Cleaning
+- SQL
+- Database Queries
+- Data Analysis
+- Charts and Reports
+- Power BI
+- Data Visualization
+- Dashboard Basics
+- Practical Exercises
+- Project-based Learning
+
+Career roles related to this course:
+- Data Analyst
+- MIS Executive
+- Reporting Analyst
+- Business Analyst Assistant
+
+The chatbot should explain the Data Analyst course using the
+topics mentioned above.
+
+
+================================
+DIGITAL MARKETING COURSE
+================================
+
+The Digital Marketing course teaches students how to promote
+businesses, products and services on the internet.
+
+Topics covered:
+- Digital Marketing Fundamentals
+- Search Engine Optimization (SEO)
+- Social Media Marketing (SMM)
+- Facebook Marketing
+- Instagram Marketing
+- LinkedIn Basics
+- Google Ads Basics
+- Content Marketing
+- Email Marketing Basics
+- Campaign Setup
+- Analytics and Performance Tracking
+- Practical Assignments
+
+Career roles related to this course:
+- Digital Marketing Executive
+- SEO Executive
+- Social Media Executive
+- Marketing Associate
+
+The chatbot should explain the Digital Marketing course using
+the topics mentioned above.
+
+
+================================
+APP DEVELOPMENT COURSE
+================================
+
+The App Development course focuses on creating mobile
+applications for Android and modern devices.
+
+Topics covered:
+- Mobile App Development Basics
+- Java Basics
+- Android Studio Basics
+- UI Design for Mobile Apps
+- Layouts and Views
+- User Input Handling
+- Database Basics (SQLite)
+- API Integration Basics
+- App Testing
+- App Deployment Basics
+- Practical App Projects
+
+Career roles related to this course:
+- Android App Developer
+- Mobile Application Developer
+- Junior App Programmer
+
+The chatbot should explain the App Development course using
+the topics mentioned above.
+
+
+================================
+WEB DEVELOPMENT COURSE
+================================
+
+The Web Development course teaches students how to create
+websites and web applications.
+
+Topics covered:
+- Web Development Basics
+- HTML5
+- CSS3
+- Responsive Web Design
+- Bootstrap Basics
+- JavaScript Fundamentals
+- DOM Manipulation
+- Backend Concepts
+- Database Basics
+- Connecting Frontend with Backend
+- Website Deployment Basics
+- Project Work
+
+Career roles related to this course:
+- Web Designer
+- Frontend Developer
+- Web Developer
+- Full Stack Junior Developer
+
+The chatbot should explain the Web Development course using
+the information available in this knowledge base.
+
+
+================================
+CHATBOT ANSWERING RULES
+================================
+
+The AI chatbot must use this knowledge base when answering
+questions related to our classes and courses.
+
+If the user asks about our class:
+Explain the available courses:
+- Data Analyst
+- Digital Marketing
+- App Development
+- Web Development
+
+If the user asks about a specific course:
+Provide information from that course section.
+
+The chatbot should give answers in a simple and clear way.
+
+The chatbot should not invent information.
+
+Do not invent:
+- Fees
+- Class timings
+- Class address
+- Trainer names
+- Contact numbers
+- Placement guarantees
+- Course duration
+
+If any of these details are not available in this file,
+the chatbot should say that the information is not available
+in the knowledge base.
+
+If the user asks something that is not related to the
+knowledge base, the chatbot can answer normally using
+its general AI knowledge.
