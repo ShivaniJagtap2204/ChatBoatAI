@@ -14,6 +14,7 @@ RUN dotnet publish "ChatBoatAI.csproj" -c Release -o /app/publish /p:UseAppHost=
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
+COPY --from=build /src/Data ./Data
 
 # Configure port (Render defaults to 8080)
 ENV ASPNETCORE_URLS=http://+:8080
