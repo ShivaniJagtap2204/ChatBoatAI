@@ -1,22 +1,20 @@
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "NMD Infotech AI Assistant";
 }
-
-@* <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div> *@
 
 <link rel="stylesheet" href="~/css/chat.css" />
 
 <div class="chat-container">
     <div class="chat-header">
-
         <div class="header-left">
-            <div class="header-icon">🤖</div>
+            <div class="header-icon">
+                <img src="/images/company-logo.png.png" alt="NMD" onerror="this.style.display='none'; this.parentElement.querySelector('.header-text-icon').style.display='flex';" />
+                <div class="header-text-icon" style="display:none;">NMD</div>
+            </div>
 
             <div>
                 <h1>NMD AI Assistant</h1>
+                <p><span class="online-dot"></span> NMD Infotech Services • Pune</p>
             </div>
         </div>
 
@@ -25,48 +23,47 @@
                 🗑️ Clear
             </button>
         </div>
-
-    </div>
+    </div>  
 
     <div id="chatMessages" class="chat-messages">
         <div class="welcome-message">
             <div class="welcome-icon">
-                <img src="/images/company-logo.png.png" alt="Company Logo" />
+                <img src="/images/company-logo.png.png" alt="NMD Infotech Logo" onerror="this.src='/images/company-logo.png';" />
             </div>
 
+            <h2>Welcome to NMD Infotech! 👋</h2>
             <p>
-                I'm your AI Assistant.<br />
-                How can I help you today?
+                I am your AI Assistant for <strong>NMD Infotech Services</strong>.<br />
+                Ask me about our IT solutions, custom software, app development, or get in touch with our team!
             </p>
 
             <div class="suggestion-buttons">
-                <button onclick="sendSuggestion('What courses are available?')">
-                    📚 Courses
+                <button onclick="sendSuggestion('What services does NMD Infotech provide?')">
+                    🌐 Our Services
                 </button>
 
-                <button onclick="sendSuggestion('Tell me about Data Analytics')">
+                <button onclick="sendSuggestion('Tell me about Web and App Development')">
+                    💻 Web & Mobile Apps
+                </button> 
+
+                <button onclick="sendSuggestion('Tell me about Data Science and Analytics')">
                     📊 Data Analytics
                 </button>
 
-                <button onclick="sendSuggestion('Tell me about Web Development')">
-                    💻 Web Development
+                <button onclick="sendSuggestion('What is your office address and contact number?')">
+                    📍 Contact & Office
                 </button>
             </div>
         </div>
-
     </div>
 
     <div class="chat-input">
         <input type="text"
                id="userInput"
-               placeholder="Ask anything..." />
+               placeholder="Ask about our IT services, projects, or contact..." />
 
         <button id="sendBtn">
             Send
         </button>
     </div>
-
 </div>
-
-@* <script src="~/js/site.js"></script>
- *@

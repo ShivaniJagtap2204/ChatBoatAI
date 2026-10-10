@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace ChatBoatAI.Services
@@ -51,10 +52,10 @@ namespace ChatBoatAI.Services
             var trimmedMessage = message.Trim();
             var normalizedMessage = trimmedMessage.ToLowerInvariant();
 
-            // 1. Instant reply for common greetings to save API quota
-            if (IsCommonGreeting(normalizedMessage, out string greetingReply))
+            // 1. Instant reply for common greetings and contact requests to save API quota
+            if (IsCommonGreeting(normalizedMessage, out string instantReply))
             {
-                return greetingReply;
+                return instantReply;
             }
 
             // 2. Check In-Memory Cache (serves frequent / identical questions instantly with 0 quota cost)
@@ -74,23 +75,23 @@ namespace ChatBoatAI.Services
             // Read Knowledge Base
             var knowledge = GetKnowledge();
 
-            // Create prompt
-            var prompt = $@"You are an AI chatbot. Use the following knowledge base to answer the user's question.
+            // Create prompt with strict no-asterisks formatting
+            var prompt = $@"You are the official AI Assistant for NMD Infotech Services (Pune, Maharashtra, India).
+Use the following official company knowledge base to answer the user's question clearly, politely, and professionally.
+
 KNOWLEDGE BASE:
 {knowledge}
 
 USER QUESTION: {trimmedMessage}
 
-Instructions:
-- If the question is about our class, use the knowledge base.
-- If the question is about Data Analyst, use the Data Analyst section.
-- If the question is about Digital Marketing, use the Digital Marketing section.
-- If the question is about App Development, use the App Development section.
-- If the question is about Web Development, use the Web Development section.
-- Do not invent class information.
-- Do not invent fees, timings, address, trainer names or contact details.
-- If the requested information is not available in the knowledge base, clearly say that the information is not available.
-- Give the answer in a simple and helpful way.
+CRITICAL INSTRUCTIONS & FORMATTING RULES:
+1. STRICTLY NO STARS OR ASTERISKS: Do NOT use markdown bold asterisks (** or *). Do NOT output star characters anywhere in your response.
+2. FORMATTING: Use clean, well-spaced paragraphs. For lists, use clean bullets like '• ' or simple numbers like (1, 2, 3) or dashes (-).
+3. TONE: Professional, courteous, helpful, and easily understandable.
+4. SERVICES & DETAILS:
+   - For services (Web Development, App Development, Data Science, Data Analysis, Digital Marketing, Game Development, Business Consulting), give crisp, informative details from the knowledge base.
+   - For contact information, provide Phone/WhatsApp: +91 9049442717, Email: info@nmdinfotechservices.com, Office: Office No. 11, Second Floor, Aditya Centeegra, FC Road, Shivajinagar, Pune 411005.
+5. ACCURACY: Do not invent fake information or unverified pricing. Keep answers focused on NMD Infotech Services.
 ";
 
             var requestBody = new
@@ -110,7 +111,7 @@ Instructions:
                 },
                 generationConfig = new
                 {
-                    temperature = 0.5,
+                    temperature = 0.4,
                     maxOutputTokens = 1000
                 }
             };
@@ -133,12 +134,13 @@ Instructions:
 
                 try
                 {
-                    var answer = await CallGeminiApiAsync(currentKey, jsonPayload);
+                    var rawAnswer = await CallGeminiApiAsync(currentKey, jsonPayload);
+                    var cleanAnswer = CleanFormatting(rawAnswer);
 
-                    if (!string.IsNullOrWhiteSpace(answer))
+                    if (!string.IsNullOrWhiteSpace(cleanAnswer))
                     {
                         // Cache response for 24 hours so repeat questions consume 0 API quota
-                        _cache.Set(cacheKey, answer, TimeSpan.FromHours(24));
+                        _cache.Set(cacheKey, cleanAnswer, TimeSpan.FromHours(24));
 
                         // Set active key to current successful key
                         lock (_keyLock)
@@ -146,7 +148,7 @@ Instructions:
                             _activeKeyIndex = currentKeyIndex;
                         }
 
-                        return answer;
+                        return cleanAnswer;
                     }
                 }
                 catch (QuotaExceededException)
@@ -168,7 +170,7 @@ Instructions:
 
             if (encounteredQuotaLimit)
             {
-                return "⚠️ AI सर्व्हरवर सध्या खूप लोड (Rate Limit) आहे. कृपया १०-१५ सेकंद थांबा आणि पुन्हा प्रयत्न करा! (AI servers are busy, please try again in 15 seconds).";
+                return "Our AI assistant is currently experiencing high traffic. Please wait a few seconds and try again.";
             }
 
             throw new Exception("Unable to get response from Gemini. Please try again.");
@@ -226,6 +228,23 @@ Instructions:
             return "";
         }
 
+        // Clean any residual markdown asterisks or formatting so stars never appear in the output
+        private static string CleanFormatting(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return "";
+
+            // Remove markdown headers
+            var cleaned = Regex.Replace(text, @"^#{1,6}\s*", "", RegexOptions.Multiline);
+
+            // Replace markdown bullet points (* item) with clean bullet (• item)
+            cleaned = Regex.Replace(cleaned, @"^\s*[\*]\s+", "• ", RegexOptions.Multiline);
+
+            // Remove all bold/italic markdown asterisks
+            cleaned = cleaned.Replace("**", "").Replace("*", "");
+
+            return cleaned.Trim();
+        }
+
         private bool IsCommonGreeting(string message, out string reply)
         {
             reply = "";
@@ -234,13 +253,37 @@ Instructions:
             if (simple == "hi" || simple == "hello" || simple == "hey" || simple == "hii" || simple == "hiii" ||
                 simple == "namaste" || simple == "good morning" || simple == "good evening" || simple == "good afternoon")
             {
-                reply = "Hello! 👋 I'm your NMD AI Assistant. How can I help you today? You can ask me about our courses including Web Development, Data Analytics, Digital Marketing, App Development, and more!";
+                reply = "Hello! 👋 Welcome to NMD Infotech Services. I am your AI Assistant. How can I assist you with our Web Development, Mobile Apps, Data Science, Data Analysis, Digital Marketing, or Business Consulting services today?";
                 return true;
             }
 
-            if (simple == "who are you" || simple == "what is your name" || simple == "tu kon ahes")
+            if (simple == "who are you" || simple == "what is your name")
             {
-                reply = "I'm NMD AI Assistant, created to answer your questions regarding our courses including Web Development, Data Analyst, App Development, and Digital Marketing!";
+                reply = "I am the official AI Assistant for NMD Infotech Services (Pune). I can help you with information about our IT services, custom software, app development, data analytics, digital marketing, and contact details!";
+                return true;
+            }
+
+            if (simple == "what services does nmd infotech provide" || simple == "our services" || simple == "services")
+            {
+                reply = "NMD Infotech Services offers comprehensive IT and digital solutions tailored to your business:\n\n• Web Development (Custom websites, React, Angular, ASP.NET Core, E-commerce)\n• Mobile App Development (iOS, Android, and Cross-Platform Apps)\n• Data Science & Machine Learning\n• Data Analysis & Power BI Dashboards\n• Digital Marketing (SEO, Social Media Marketing, Google Ads)\n• Game Development (Interactive 2D & 3D Games)\n• Strategic Business & IT Consulting";
+                return true;
+            }
+
+            if (simple == "tell me about web and app development")
+            {
+                reply = "At NMD Infotech Services, we build high-performance Web and Mobile Applications:\n\n• Web Development: Responsive corporate websites, SaaS platforms, and e-commerce portals using React, Angular, ASP.NET Core, Node.js, and modern databases.\n• Mobile App Development: User-friendly Android, iOS, and cross-platform apps (Flutter / React Native) with secure backend APIs and Play Store / App Store deployment.";
+                return true;
+            }
+
+            if (simple == "tell me about data science and analytics")
+            {
+                reply = "Our Data Science and Data Analysis services help transform raw numbers into actionable business growth:\n\n• Data Analysis: KPI tracking, interactive Power BI & Tableau dashboards, SQL reporting, and business intelligence.\n• Data Science: Data cleansing, predictive modeling, machine learning algorithms, and automated insights to drive smarter business decisions.";
+                return true;
+            }
+
+            if (simple == "what is your office address and contact number" || simple == "contact" || simple == "contact us" || simple == "phone" || simple == "address" || simple == "location" || simple == "office" || simple == "number")
+            {
+                reply = "Here are the official contact details for NMD Infotech Services:\n\n• Office Address: Office No. 11, Second Floor, NMD PVT LTD, Aditya Centeegra, Fergusson College Road (FC Road), Shivajinagar, Pune, Maharashtra 411005\n• Phone & WhatsApp: +91 9049442717\n• Email: info@nmdinfotechservices.com | hr@nmdinfotechservices.com\n• Website: https://www.nmdinfotechservices.com/";
                 return true;
             }
 

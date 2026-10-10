@@ -1,173 +1,92 @@
-KNOWLEDGE BASE FOR AI CHATBOT
+=======================================================
+NMD INFOTECH SERVICES - OFFICIAL KNOWLEDGE BASE
+Website: https://www.nmdinfotechservices.com/
+=======================================================
 
-================================
-OUR CLASS INFORMATION
-================================
+ABOUT NMD INFOTECH SERVICES:
+NMD Infotech Services (NMD Pvt. Ltd.) is a premier IT solutions, software services, and business consulting company based in Pune, Maharashtra, India.
+We empower businesses of all sizes—from budding startups to well-established enterprises—with modern, scalable, and results-driven digital solutions.
 
-Our class provides training in four major areas:
+Company Tagline:
+"Empowering Your Business Presence With Best Solutions – NMD Services!"
+"We build software not just for functionality, but for transformation."
+Your trusted partner for modern digital solutions - Best Consulting & IT Services Provider in Pune.
 
-1. Data Analyst
-2. Digital Marketing
-3. App Development
-4. Web Development
+FOUNDER & LEADERSHIP:
+- Founder: Mr. Navnath Mohan Darekar (globally recognized as NMD).
+- Background: A visionary entrepreneur with a strong foundation in software engineering and deep expertise in cloud computing and digital transformation.
+- Recognition: Awarded "The Tycoon Of Maharashtra of the Year 2024" for Best Businessman of the Year, presented by Indian actress Mrs. Hruta Durgule.
+- Author: Mr. Navnath Darekar is the author of the popular business book "Revamping Business with Modern Marketing", widely available on Amazon and Flipkart, offering actionable marketing strategies for businesses, students, and professionals.
+- Philosophy: Mentoring young developers, empowering teams with cutting-edge technology, and delivering sustainable long-term value for clients.
 
+OFFICE LOCATION & CONTACT DETAILS:
+- Registered Office Address:
+  Office No. 11, Second Floor, NMD PVT LTD, Aditya Centeegra, Fergusson College Road (FC Road), Shivajinagar, Pune, Maharashtra 411005, India.
+- Phone & WhatsApp: +91 9049442717 (WhatsApp: https://wa.me/919049442717)
+- Official Emails:
+  info@nmdinfotechservices.com (General & Business Inquiries)
+  hr@nmdinfotechservices.com (Careers & HR)
+- Official Website: https://www.nmdinfotechservices.com/
+- Social Media:
+  LinkedIn: https://in.linkedin.com/company/nmd-infotech
+  Instagram: https://instagram.com/nmdinfotech (@nmdinfotech)
 
-================================
-DATA ANALYST COURSE
-================================
+=======================================================
+OUR CORE SERVICES
+=======================================================
 
-The Data Analyst course is designed to teach students how to
-work with data, analyze information and create useful reports.
+1. WEB DEVELOPMENT:
+- Custom responsive website design and development tailored to client business needs.
+- Corporate websites, web portals, SaaS platforms, and e-commerce solutions.
+- Technologies: React, Angular, HTML5, CSS3, JavaScript, ASP.NET Core, Node.js, PHP, Python, modern relational and NoSQL databases.
+- Highlights: Mobile-first responsive design, SEO-friendly structure, high security, fast loading speed, seamless user experience.
 
-Topics covered:
-- Data Analytics Basics
-- Microsoft Excel
-- Data Cleaning
-- SQL
-- Database Queries
-- Data Analysis
-- Charts and Reports
-- Power BI
-- Data Visualization
-- Dashboard Basics
-- Practical Exercises
-- Project-based Learning
+2. CUSTOM APP DEVELOPMENT (MOBILE APPLICATIONS):
+- Native and cross-platform mobile app development for iOS and Android.
+- Technologies: Flutter, React Native, Java, Kotlin, Swift.
+- End-to-end services: UI/UX design, custom backend API integration, app testing, Google Play Store and Apple App Store deployment, ongoing maintenance.
+- Designed for speed, high user retention, and enterprise scalability.
 
-Career roles related to this course:
-- Data Analyst
-- MIS Executive
-- Reporting Analyst
-- Business Analyst Assistant
+3. DATA SCIENCE:
+- Turning complex, large datasets into predictive insights and business intelligence.
+- End-to-end data lifecycle: Data collection, data cleaning, feature engineering, predictive modeling, machine learning, and AI integration.
+- Helps businesses forecast trends, understand customer behavior, automate workflows, and drive innovation.
 
-The chatbot should explain the Data Analyst course using the
-topics mentioned above.
+4. DATA ANALYSIS:
+- Transforming raw data into clear, actionable business narratives and decisions.
+- Advanced dashboards and KPI reporting using Power BI, Tableau, Advanced Excel, and SQL queries.
+- Services include business performance metrics, customer analytics, sales reports, data visualization, and automated reporting.
 
+5. DIGITAL MARKETING:
+- Complete 360-degree digital marketing solutions to boost brand presence and lead generation.
+- Search Engine Optimization (SEO): On-page, off-page, technical SEO to rank higher on Google.
+- Social Media Marketing (SMM): Creative campaigns and management on Instagram, Facebook, LinkedIn, YouTube.
+- Pay-Per-Click Advertising (PPC): High-converting Google Ads and Meta Ads campaigns.
+- Content Marketing and Email Marketing for customer engagement and retargeting.
 
-================================
-DIGITAL MARKETING COURSE
-================================
+6. GAME DEVELOPMENT:
+- Engaging and interactive 2D and 3D gaming experiences for mobile and web platforms.
+- Combining creative storytelling, intuitive gameplay physics, immersive graphics, and modern game engines.
 
-The Digital Marketing course teaches students how to promote
-businesses, products and services on the internet.
+7. STRATEGIC BUSINESS CONSULTING & BRAND STRATEGY:
+- Guiding companies through digital transformation, process optimization, and market expansion.
+- Brand Strategy: Defining unique value propositions, audience segmentation, competitor analysis, and market positioning.
+- Operations Consulting: Enhancing business workflows, reducing costs, and scaling sustainably.
 
-Topics covered:
-- Digital Marketing Fundamentals
-- Search Engine Optimization (SEO)
-- Social Media Marketing (SMM)
-- Facebook Marketing
-- Instagram Marketing
-- LinkedIn Basics
-- Google Ads Basics
-- Content Marketing
-- Email Marketing Basics
-- Campaign Setup
-- Analytics and Performance Tracking
-- Practical Assignments
+=======================================================
+WHY CHOOSE NMD INFOTECH SERVICES?
+=======================================================
+- Client-Centric Approach: Solutions customized specifically to your industry and goals.
+- Experienced Team: Skilled software engineers, data analysts, creative designers, and marketing experts.
+- Transparent & Reliable Support: Clear communication, milestone-based delivery, and dedicated post-launch support.
+- Proven Track Record: Recognized as a leading IT and business consulting partner in Pune.
 
-Career roles related to this course:
-- Digital Marketing Executive
-- SEO Executive
-- Social Media Executive
-- Marketing Associate
-
-The chatbot should explain the Digital Marketing course using
-the topics mentioned above.
-
-
-================================
-APP DEVELOPMENT COURSE
-================================
-
-The App Development course focuses on creating mobile
-applications for Android and modern devices.
-
-Topics covered:
-- Mobile App Development Basics
-- Java Basics
-- Android Studio Basics
-- UI Design for Mobile Apps
-- Layouts and Views
-- User Input Handling
-- Database Basics (SQLite)
-- API Integration Basics
-- App Testing
-- App Deployment Basics
-- Practical App Projects
-
-Career roles related to this course:
-- Android App Developer
-- Mobile Application Developer
-- Junior App Programmer
-
-The chatbot should explain the App Development course using
-the topics mentioned above.
-
-
-================================
-WEB DEVELOPMENT COURSE
-================================
-
-The Web Development course teaches students how to create
-websites and web applications.
-
-Topics covered:
-- Web Development Basics
-- HTML5
-- CSS3
-- Responsive Web Design
-- Bootstrap Basics
-- JavaScript Fundamentals
-- DOM Manipulation
-- Backend Concepts
-- Database Basics
-- Connecting Frontend with Backend
-- Website Deployment Basics
-- Project Work
-
-Career roles related to this course:
-- Web Designer
-- Frontend Developer
-- Web Developer
-- Full Stack Junior Developer
-
-The chatbot should explain the Web Development course using
-the information available in this knowledge base.
-
-
-================================
-CHATBOT ANSWERING RULES
-================================
-
-The AI chatbot must use this knowledge base when answering
-questions related to our classes and courses.
-
-If the user asks about our class:
-Explain the available courses:
-- Data Analyst
-- Digital Marketing
-- App Development
-- Web Development
-
-If the user asks about a specific course:
-Provide information from that course section.
-
-The chatbot should give answers in a simple and clear way.
-
-The chatbot should not invent information.
-
-Do not invent:
-- Fees
-- Class timings
-- Class address
-- Trainer names
-- Contact numbers
-- Placement guarantees
-- Course duration
-
-If any of these details are not available in this file,
-the chatbot should say that the information is not available
-in the knowledge base.
-
-If the user asks something that is not related to the
-knowledge base, the chatbot can answer normally using
-its general AI knowledge.
+=======================================================
+CHATBOT RESPONSE GUIDELINES
+=======================================================
+- Tone: Professional, courteous, clear, and easy to understand.
+- Always provide accurate information about NMD Infotech Services, its services, founder, and contact details from this knowledge base.
+- When clients ask about hiring services or starting a project, invite them to contact the team via phone/WhatsApp at +91 9049442717 or email at info@nmdinfotechservices.com.
+- For address inquiries, mention: Office No. 11, Second Floor, Aditya Centeegra, FC Road, Shivajinagar, Pune 411005.
+- If a specific pricing or quote is requested, explain that pricing depends on project requirements and guide them to contact the team for a custom quote.
+- Do not invent non-existent services, fake pricing, or false claims.
