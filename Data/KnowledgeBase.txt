@@ -38,7 +38,7 @@ OUR CORE SERVICES
 1. WEB DEVELOPMENT:
 - Custom responsive website design and development tailored to client business needs.
 - Corporate websites, web portals, SaaS platforms, and e-commerce solutions.
-- Technologies: React, Angular, HTML5, CSS3, JavaScript, ASP.NET Core, Node.js, PHP, Python, modern relational and NoSQL databases.
+- Technologies: React, Angular, HTML5, CSS3, JavaScript, Node.js, PHP, Python, modern relational and NoSQL databases.
 - Highlights: Mobile-first responsive design, SEO-friendly structure, high security, fast loading speed, seamless user experience.
 
 2. CUSTOM APP DEVELOPMENT (MOBILE APPLICATIONS):

@@ -90,9 +90,11 @@ CRITICAL INSTRUCTIONS & FORMATTING RULES:
 2. GENERAL QUESTIONS (NOT RELATED TO THE WEBSITE):
    - If the user asks ANY question that is not related to the website or company (e.g., general knowledge, technology, coding, science, definitions, or any general topic), answer it directly, accurately, and helpfully using your own Gemini AI knowledge!
    - Never refuse general questions or say 'information is not in the knowledge base' for general topics.
-3. STRICTLY NO STARS OR ASTERISKS:
+3. STRICTLY NO .NET REFERENCES:
+   - Do NOT mention .NET, ASP.NET, ASP.NET Core, or C# anywhere in your answers.
+4. STRICTLY NO STARS OR ASTERISKS:
    - Do NOT use markdown bold asterisks (** or *). Do NOT output star characters anywhere in your response.
-4. FORMATTING & TONE:
+5. FORMATTING & TONE:
    - Use clean, well-spaced paragraphs. For lists, use clean bullets like '• ' or simple numbers (1, 2, 3) or dashes (-).
    - Keep the language professional, polite, clear, and easy to understand.
 ";
@@ -340,6 +342,12 @@ CRITICAL INSTRUCTIONS & FORMATTING RULES:
             // Remove all bold/italic markdown asterisks
             cleaned = cleaned.Replace("**", "").Replace("*", "");
 
+            // Remove any accidental .NET / ASP.NET Core mentions
+            cleaned = Regex.Replace(cleaned, @"\bASP\.NET\s+Core\s*,\s*", "", RegexOptions.IgnoreCase);
+            cleaned = Regex.Replace(cleaned, @",\s*\bASP\.NET\s+Core\b", "", RegexOptions.IgnoreCase);
+            cleaned = Regex.Replace(cleaned, @"\bASP\.NET\s+Core\b", "", RegexOptions.IgnoreCase);
+            cleaned = Regex.Replace(cleaned, @"\bASP\.NET\b", "", RegexOptions.IgnoreCase);
+
             return cleaned.Trim();
         }
 
@@ -363,13 +371,13 @@ CRITICAL INSTRUCTIONS & FORMATTING RULES:
 
             if (simple == "what services does nmd infotech provide" || simple == "our services" || simple == "services")
             {
-                reply = "NMD Infotech Services offers comprehensive IT and digital solutions tailored to your business:\n\n• Web Development (Custom websites, React, Angular, ASP.NET Core, E-commerce)\n• Mobile App Development (iOS, Android, and Cross-Platform Apps)\n• Data Science & Machine Learning\n• Data Analysis & Power BI Dashboards\n• Digital Marketing (SEO, Social Media Marketing, Google Ads)\n• Game Development (Interactive 2D & 3D Games)\n• Strategic Business & IT Consulting";
+                reply = "NMD Infotech Services offers comprehensive IT and digital solutions tailored to your business:\n\n• Web Development (Custom websites, React, Angular, Node.js, E-commerce)\n• Mobile App Development (iOS, Android, and Cross-Platform Apps)\n• Data Science & Machine Learning\n• Data Analysis & Power BI Dashboards\n• Digital Marketing (SEO, Social Media Marketing, Google Ads)\n• Game Development (Interactive 2D & 3D Games)\n• Strategic Business & IT Consulting";
                 return true;
             }
 
             if (simple == "tell me about web and app development")
             {
-                reply = "At NMD Infotech Services, we build high-performance Web and Mobile Applications:\n\n• Web Development: Responsive corporate websites, SaaS platforms, and e-commerce portals using React, Angular, ASP.NET Core, Node.js, and modern databases.\n• Mobile App Development: User-friendly Android, iOS, and cross-platform apps (Flutter / React Native) with secure backend APIs and Play Store / App Store deployment.";
+                reply = "At NMD Infotech Services, we build high-performance Web and Mobile Applications:\n\n• Web Development: Responsive corporate websites, SaaS platforms, and e-commerce portals using React, Angular, Node.js, and modern databases.\n• Mobile App Development: User-friendly Android, iOS, and cross-platform apps (Flutter / React Native) with secure backend APIs and Play Store / App Store deployment.";
                 return true;
             }
 
