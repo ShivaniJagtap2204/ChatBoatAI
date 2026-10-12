@@ -131,3 +131,116 @@ if (clearChatBtn) {
         `;
     });
 }
+
+// Microphone / Voice Input
+let micBtn = document.getElementById("micBtn");
+
+// If the Razor view hasn't been rebuilt yet, inject the mic button dynamically next to Send button
+if (!micBtn && sendBtn && sendBtn.parentElement) {
+    micBtn = document.createElement("button");
+    micBtn.type = "button";
+    micBtn.id = "micBtn";
+    micBtn.className = "mic-btn";
+    micBtn.title = "Voice Input";
+    micBtn.setAttribute("aria-label", "Voice Input");
+    micBtn.innerHTML = "🎤";
+    sendBtn.parentElement.insertBefore(micBtn, sendBtn);
+}
+
+if (micBtn) {
+    // Ensure mic button styles are applied even if chat.css is cached in the browser
+    if (!document.getElementById("micBtnStyles")) {
+        const style = document.createElement("style");
+        style.id = "micBtnStyles";
+        style.textContent = `
+            .chat-input .mic-btn {
+                width: 50px !important;
+                height: 50px !important;
+                min-width: 50px !important;
+                padding: 0 !important;
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 50% !important;
+                background: #f8fafc !important;
+                color: #0d47a1 !important;
+                font-size: 20px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+                flex-shrink: 0 !important;
+                cursor: pointer !important;
+            }
+            .chat-input .mic-btn:hover {
+                background: #eff6ff !important;
+                border-color: #0d47a1 !important;
+                transform: translateY(-1px);
+            }
+            .chat-input .mic-btn.listening {
+                background: #ef4444 !important;
+                border-color: #ef4444 !important;
+                color: #ffffff !important;
+                animation: micPulse 1.5s infinite !important;
+            }
+            @media (max-width: 768px) {
+                .chat-input .mic-btn {
+                    width: 46px !important;
+                    height: 46px !important;
+                    min-width: 46px !important;
+                    font-size: 18px !important;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = "en-US";
+
+        let isListening = false;
+        const defaultPlaceholder = input.placeholder;
+
+        micBtn.addEventListener("click", function () {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        });
+
+        recognition.onstart = function () {
+            isListening = true;
+            micBtn.classList.add("listening");
+            micBtn.title = "Listening... Click to stop";
+            input.placeholder = "Listening... Speak now";
+        };
+
+        recognition.onresult = function (event) {
+            const transcript = event.results[0][0].transcript;
+            input.value = (input.value ? input.value + " " : "") + transcript;
+            input.focus();
+        };
+
+        recognition.onend = function () {
+            isListening = false;
+            micBtn.classList.remove("listening");
+            micBtn.title = "Voice Input";
+            input.placeholder = defaultPlaceholder;
+        };
+
+        recognition.onerror = function () {
+            isListening = false;
+            micBtn.classList.remove("listening");
+            micBtn.title = "Voice Input";
+            input.placeholder = defaultPlaceholder;
+        };
+    } else {
+        micBtn.addEventListener("click", function () {
+            alert("Voice input is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
+        });
+    }
+}

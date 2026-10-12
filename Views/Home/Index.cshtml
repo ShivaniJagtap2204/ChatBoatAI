@@ -2,7 +2,7 @@
     ViewData["Title"] = "NMD Infotech AI Assistant";
 }
 
-<link rel="stylesheet" href="~/css/chat.css" />
+<link rel="stylesheet" href="~/css/chat.css" asp-append-version="true" />
 
 <div class="chat-container">
     <div class="chat-header">
@@ -61,6 +61,10 @@
         <input type="text"
                id="userInput"
                placeholder="Ask about our IT services, projects, or contact..." />
+
+        <button type="button" id="micBtn" class="mic-btn" title="Voice Input" aria-label="Voice Input">
+            🎤
+        </button>
 
         <button id="sendBtn">
             Send
