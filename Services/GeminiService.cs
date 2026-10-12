@@ -179,6 +179,101 @@ CRITICAL INSTRUCTIONS & FORMATTING RULES:
             throw new Exception("Unable to get response from Gemini. Please try again.");
         }
 
+        public async Task<string> TranscribeAudioAsync(string audioBase64, string mimeType)
+        {
+            if (string.IsNullOrWhiteSpace(audioBase64))
+                return string.Empty;
+
+            var apiKeys = GetConfiguredKeys();
+            if (apiKeys.Count == 0)
+            {
+                throw new Exception("Gemini API key is missing.");
+            }
+
+            var cleanBase64 = audioBase64.Contains(",")
+                ? audioBase64.Substring(audioBase64.IndexOf(",") + 1)
+                : audioBase64;
+
+            var cleanMimeType = string.IsNullOrWhiteSpace(mimeType)
+                ? "audio/webm"
+                : mimeType.Split(';')[0].Trim();
+
+            var requestBody = new
+            {
+                contents = new[]
+                {
+                    new
+                    {
+                        parts = new object[]
+                        {
+                            new
+                            {
+                                inline_data = new
+                                {
+                                    mime_type = cleanMimeType,
+                                    data = cleanBase64
+                                }
+                            },
+                            new
+                            {
+                                text = "Transcribe the spoken audio accurately into plain text. Output ONLY the exact words spoken by the user without any extra commentary or quotes. If there is no speech in the audio, return nothing."
+                            }
+                        }
+                    }
+                },
+                generationConfig = new
+                {
+                    temperature = 0.1,
+                    maxOutputTokens = 250
+                }
+            };
+
+            var jsonPayload = JsonSerializer.Serialize(requestBody);
+
+            int startIndex;
+            lock (_keyLock)
+            {
+                startIndex = _activeKeyIndex % apiKeys.Count;
+            }
+
+            for (int keyAttempt = 0; keyAttempt < apiKeys.Count; keyAttempt++)
+            {
+                int currentKeyIndex = (startIndex + keyAttempt) % apiKeys.Count;
+                var currentKey = apiKeys[currentKeyIndex];
+
+                try
+                {
+                    var rawTranscript = await CallGeminiApiAsync(currentKey, jsonPayload);
+                    var cleaned = CleanFormatting(rawTranscript);
+
+                    lock (_keyLock)
+                    {
+                        _activeKeyIndex = currentKeyIndex;
+                    }
+
+                    if (cleaned.Equals("No response received.", StringComparison.OrdinalIgnoreCase))
+                        return string.Empty;
+
+                    return cleaned;
+                }
+                catch (QuotaExceededException)
+                {
+                    lock (_keyLock)
+                    {
+                        _activeKeyIndex = (currentKeyIndex + 1) % apiKeys.Count;
+                    }
+                    continue;
+                }
+                catch (Exception)
+                {
+                    if (keyAttempt == apiKeys.Count - 1)
+                        throw;
+                }
+            }
+
+            return string.Empty;
+        }
+
         private async Task<string> CallGeminiApiAsync(string apiKey, string jsonPayload)
         {
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key={apiKey}";

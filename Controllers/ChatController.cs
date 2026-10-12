@@ -1,4 +1,4 @@
-﻿using ChatBoatAI.Models;
+using ChatBoatAI.Models;
 using ChatBoatAI.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +10,7 @@ namespace ChatBoatAI.Controllers
     {
         private readonly GeminiService _geminiService;
 
-        public ChatController(GeminiService geminiService)
+        public ChatController(GeminiService geminiService)  
         {
             _geminiService = geminiService; 
         }
@@ -28,7 +28,33 @@ namespace ChatBoatAI.Controllers
                 return Ok(new
                 {
                     success = true,
-                    response = response
+                    response = response  
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TranscribeAudio([FromBody] AudioTranscribeRequest request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.AudioBase64))
+                return BadRequest(new { success = false, error = "Audio data is required." });
+
+            try
+            {
+                var transcript = await _geminiService.TranscribeAudioAsync(request.AudioBase64, request.MimeType);
+
+                return Ok(new
+                {
+                    success = true,
+                    transcript = transcript
                 });
             }
             catch (Exception ex)
