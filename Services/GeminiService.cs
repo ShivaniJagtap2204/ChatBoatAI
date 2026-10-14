@@ -246,7 +246,7 @@ RESPONSE INSTRUCTIONS & FORMATTING RULES:
                             },
                             new
                             {
-                                text = "Transcribe the spoken audio accurately into plain text. Output ONLY the exact words spoken by the user without any extra commentary or quotes. If there is no speech in the audio, return nothing."
+                                text = "Transcribe the spoken audio accurately into plain text. The user may be speaking in Marathi, Hindi, or English. Output ONLY the exact words spoken by the user in the language spoken, without any extra commentary, labels, or quotes. If there is no speech in the audio, return nothing."
                             }
                         }
                     }

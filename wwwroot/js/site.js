@@ -132,10 +132,24 @@ if (clearChatBtn) {
     });
 }
 
-// Microphone / Voice Input
+// Microphone / Voice Input with Marathi & English Live Speech-to-Text
 let micBtn = document.getElementById("micBtn");
+let micLangBtn = document.getElementById("micLangBtn");
 
-// If the Razor view hasn't been rebuilt yet, inject the mic button dynamically next to Send button
+// Selected voice language: default to Marathi (mr-IN), fallback to English (en-IN)
+let currentVoiceLang = localStorage.getItem("chat_mic_lang") || "mr-IN";
+
+// If the Razor view hasn't been rebuilt yet, inject the mic buttons dynamically next to Send button
+if (!micLangBtn && sendBtn && sendBtn.parentElement) {
+    micLangBtn = document.createElement("button");
+    micLangBtn.type = "button";
+    micLangBtn.id = "micLangBtn";
+    micLangBtn.className = "mic-lang-btn";
+    micLangBtn.title = "व्हॉईस भाषा बदला (मराठी / English)";
+    micLangBtn.textContent = currentVoiceLang === "mr-IN" ? "मराठी" : "English";
+    sendBtn.parentElement.insertBefore(micLangBtn, sendBtn);
+}
+
 if (!micBtn && sendBtn && sendBtn.parentElement) {
     micBtn = document.createElement("button");
     micBtn.type = "button";
@@ -147,12 +161,62 @@ if (!micBtn && sendBtn && sendBtn.parentElement) {
     sendBtn.parentElement.insertBefore(micBtn, sendBtn);
 }
 
+// Update language button text
+function updateLangButtonUI() {
+    if (micLangBtn) {
+        micLangBtn.textContent = currentVoiceLang === "mr-IN" ? "मराठी" : "English";
+        micLangBtn.title = currentVoiceLang === "mr-IN"
+            ? "सध्याची भाषा: मराठी (क्लिक करून English करा)"
+            : "Current Language: English (Click to switch to Marathi)";
+    }
+}
+
+if (micLangBtn) {
+    updateLangButtonUI();
+    micLangBtn.addEventListener("click", function () {
+        currentVoiceLang = currentVoiceLang === "mr-IN" ? "en-IN" : "mr-IN";
+        localStorage.setItem("chat_mic_lang", currentVoiceLang);
+        updateLangButtonUI();
+
+        // If currently listening, restart with new language
+        if (isListening && recognition) {
+            recognition.stop();
+            setTimeout(function () {
+                startSpeechRecognition();
+            }, 250);
+        }
+    });
+}
+
 if (micBtn) {
-    // Ensure mic button styles are applied even if chat.css is cached in the browser
+    // Ensure mic and language button styles are applied even if chat.css is cached
     if (!document.getElementById("micBtnStyles")) {
         const style = document.createElement("style");
         style.id = "micBtnStyles";
         style.textContent = `
+            .chat-input .mic-lang-btn {
+                height: 38px !important;
+                min-width: 60px !important;
+                padding: 0 10px !important;
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 19px !important;
+                background: #f1f5f9 !important;
+                color: #0d47a1 !important;
+                font-size: 13px !important;
+                font-weight: 700 !important;
+                cursor: pointer !important;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+                transition: all 0.2s ease !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                flex-shrink: 0 !important;
+            }
+            .chat-input .mic-lang-btn:hover {
+                background: #e2e8f0 !important;
+                border-color: #0d47a1 !important;
+                transform: translateY(-1px) !important;
+            }
             .chat-input .mic-btn {
                 width: 50px !important;
                 height: 50px !important;
@@ -173,7 +237,7 @@ if (micBtn) {
             .chat-input .mic-btn:hover {
                 background: #eff6ff !important;
                 border-color: #0d47a1 !important;
-                transform: translateY(-1px);
+                transform: translateY(-1px) !important;
             }
             .chat-input .mic-btn.listening {
                 background: #ef4444 !important;
@@ -182,10 +246,16 @@ if (micBtn) {
                 animation: micPulse 1.5s infinite !important;
             }
             @media (max-width: 768px) {
+                .chat-input .mic-lang-btn {
+                    height: 36px !important;
+                    min-width: 52px !important;
+                    font-size: 12px !important;
+                    padding: 0 6px !important;
+                }
                 .chat-input .mic-btn {
-                    width: 46px !important;
-                    height: 46px !important;
-                    min-width: 46px !important;
+                    width: 44px !important;
+                    height: 44px !important;
+                    min-width: 44px !important;
                     font-size: 18px !important;
                 }
             }
@@ -195,9 +265,12 @@ if (micBtn) {
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const defaultPlaceholder = input.placeholder;
-    let isListening = false;
+    var isListening = false;
     let useMediaRecorderFallback = !SpeechRecognition;
-    let recognition = null;
+    var recognition = null;
+    let finalTranscript = "";
+    let initialTextBeforeMic = "";
+    let speechSilenceTimer = null;
     let mediaRecorder = null;
     let audioChunks = [];
     let mediaStream = null;
@@ -208,8 +281,97 @@ if (micBtn) {
     function resetMicUI() {
         isListening = false;
         micBtn.classList.remove("listening");
-        micBtn.title = "Voice Input";
+        micBtn.title = "Voice Input (क्लिक करून बोला)";
         input.placeholder = defaultPlaceholder;
+        if (speechSilenceTimer) {
+            clearTimeout(speechSilenceTimer);
+            speechSilenceTimer = null;
+        }
+    }
+
+    function startSpeechRecognition() {
+        if (!SpeechRecognition) {
+            useMediaRecorderFallback = true;
+            startMediaRecorderFallback();
+            return;
+        }
+
+        try {
+            if (recognition) {
+                try { recognition.abort(); } catch (e) { }
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true; // LIVE REAL-TIME transcription while user is speaking!
+            recognition.lang = currentVoiceLang; // "mr-IN" for Marathi or "en-IN" for English
+
+            initialTextBeforeMic = input.value.trim();
+            finalTranscript = "";
+
+            recognition.onstart = function () {
+                isListening = true;
+                micBtn.classList.add("listening");
+                micBtn.title = currentVoiceLang === "mr-IN"
+                    ? "ऐकत आहे (मराठी)... बोलणे थांबल्यावर आपोआप टाईप होईल"
+                    : "Listening... Speak now";
+                input.placeholder = currentVoiceLang === "mr-IN"
+                    ? "🎤 मराठीत बोला... तुमचे बोलणे येथे लाईव्ह दिसेल"
+                    : "🎤 Listening... Speak now";
+            };
+
+            // Stream words in real-time into the text box as they are spoken
+            recognition.onresult = function (event) {
+                let interimTranscript = "";
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    const chunk = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += chunk + " ";
+                    } else {
+                        interimTranscript += chunk;
+                    }
+                }
+
+                const currentSpoken = (finalTranscript + interimTranscript).trim();
+                if (currentSpoken) {
+                    input.value = (initialTextBeforeMic ? initialTextBeforeMic + " " : "") + currentSpoken;
+                }
+
+                // Automatic silence detection: when user pauses for 1.6s, auto-stop mic and finalize
+                if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
+                speechSilenceTimer = setTimeout(function () {
+                    if (isListening && recognition) {
+                        recognition.stop();
+                    }
+                }, 1600);
+            };
+
+            recognition.onerror = function (event) {
+                if (event.error === "no-speech") {
+                    // Ignore empty pause
+                    return;
+                }
+                resetMicUI();
+                if (event.error === "network" || event.error === "service-not-allowed" || event.error === "language-not-supported") {
+                    useMediaRecorderFallback = true;
+                    startMediaRecorderFallback();
+                } else if (event.error === "not-allowed" || event.error === "permission-denied") {
+                    alert("कृपया तुमच्या ब्राउझरमध्ये मायक्रोफोनची परवानगी (Microphone Permission) Allow करा.");
+                }
+            };
+
+            recognition.onend = function () {
+                resetMicUI();
+                input.focus();
+            };
+
+            recognition.start();
+        } catch (e) {
+            console.error("Speech recognition start error:", e);
+            useMediaRecorderFallback = true;
+            startMediaRecorderFallback();
+        }
     }
 
     function stopMediaRecording() {
@@ -275,7 +437,7 @@ if (micBtn) {
                     return;
                 }
 
-                input.placeholder = "Converting voice to text...";
+                input.placeholder = "रूपांतरित करत आहे (Converting voice to text)...";
                 micBtn.disabled = true;
 
                 const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || mimeType });
@@ -316,9 +478,11 @@ if (micBtn) {
             isListening = true;
             micBtn.classList.add("listening");
             micBtn.title = "Listening... Click to stop";
-            input.placeholder = "Listening... Speak now (click 🎤 to stop)";
+            input.placeholder = currentVoiceLang === "mr-IN"
+                ? "🎤 मराठीत बोला (थांबण्यासाठी पुन्हा 🎤 दाबा)"
+                : "🎤 Speaking... Click 🎤 to stop";
 
-            // Automatic silence detection so recording stops ~1.8s after user finishes speaking
+            // Fast silence detection stops 900ms after user finishes speaking
             try {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
                 if (AudioCtx) {
@@ -343,63 +507,22 @@ if (micBtn) {
                         if (avg > 12) {
                             spokeOnce = true;
                             silentSince = Date.now();
-                        } else if (spokeOnce && Date.now() - silentSince > 1800) {
+                        } else if (spokeOnce && Date.now() - silentSince > 900) {
                             stopMediaRecording();
                         }
-                    }, 150);
+                    }, 120);
                 }
-            } catch (e) {
-                // Ignore AudioContext errors; manual stop and max timeout still work
-            }
+            } catch (e) { }
 
-            // Safety auto-stop after 12 seconds
+            // Safety timeout after 8 seconds
             maxRecordTimer = setTimeout(function () {
                 stopMediaRecording();
-            }, 12000);
+            }, 8000);
 
         } catch (err) {
             resetMicUI();
-            alert("Please allow microphone permission in your browser to use voice input.");
+            alert("Please allow microphone permission in your browser.");
         }
-    }
-
-    if (SpeechRecognition) {
-        recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = "en-US";
-
-        recognition.onstart = function () {
-            isListening = true;
-            micBtn.classList.add("listening");
-            micBtn.title = "Listening... Click to stop";
-            input.placeholder = "Listening... Speak now";
-        };
-
-        recognition.onresult = function (event) {
-            const transcript = event.results[0][0].transcript;
-            if (transcript) {
-                input.value = (input.value ? input.value.trim() + " " : "") + transcript;
-                input.focus();
-            }
-        };
-
-        recognition.onend = function () {
-            if (!useMediaRecorderFallback) {
-                resetMicUI();
-            }
-        };
-
-        recognition.onerror = function (event) {
-            resetMicUI();
-            // If browser blocks Web Speech API (e.g. Brave, Firefox, some mobile browsers), switch to MediaRecorder fallback
-            if (event.error === "network" || event.error === "service-not-allowed" || event.error === "language-not-supported") {
-                useMediaRecorderFallback = true;
-                startMediaRecorderFallback();
-            } else if (event.error === "not-allowed" || event.error === "permission-denied") {
-                alert("Please allow microphone permission in your browser settings.");
-            }
-        };
     }
 
     micBtn.addEventListener("click", function () {
@@ -415,12 +538,7 @@ if (micBtn) {
         if (useMediaRecorderFallback) {
             startMediaRecorderFallback();
         } else {
-            try {
-                recognition.start();
-            } catch (e) {
-                useMediaRecorderFallback = true;
-                startMediaRecorderFallback();
-            }
+            startSpeechRecognition();
         }
     });
 }

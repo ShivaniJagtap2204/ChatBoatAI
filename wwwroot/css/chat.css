@@ -423,6 +423,32 @@ body {
     }
 }
 
+/* Microphone Language Selector Button */
+.chat-input .mic-lang-btn {
+    height: 38px;
+    min-width: 60px;
+    padding: 0 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 19px;
+    background: #f1f5f9;
+    color: #0d47a1;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.chat-input .mic-lang-btn:hover {
+    background: #e2e8f0;
+    border-color: #0d47a1;
+    transform: translateY(-1px);
+}
+
 /* Scrollbar */
 .chat-messages::-webkit-scrollbar {
     width: 6px;
