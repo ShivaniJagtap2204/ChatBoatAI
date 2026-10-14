@@ -313,11 +313,11 @@ if (micBtn) {
                 isListening = true;
                 micBtn.classList.add("listening");
                 micBtn.title = currentVoiceLang === "mr-IN"
-                    ? "ऐकत आहे (मराठी)... बोलणे थांबल्यावर आपोआप टाईप होईल"
+                    ? "ऐकत आहे (मराठी)... बोलणे थांबल्यावर आपोआप उत्तर येईल"
                     : "Listening... Speak now";
                 input.placeholder = currentVoiceLang === "mr-IN"
-                    ? "🎤 मराठीत बोला... तुमचे बोलणे येथे लाईव्ह दिसेल"
-                    : "🎤 Listening... Speak now";
+                    ? "🎤 मराठीत बोला... तुमचे बोलणे येथे लाईव्ह टाईप होत आहे"
+                    : "🎤 Listening... Words are appearing live";
             };
 
             // Stream words in real-time into the text box as they are spoken
@@ -336,20 +336,25 @@ if (micBtn) {
                 const currentSpoken = (finalTranscript + interimTranscript).trim();
                 if (currentSpoken) {
                     input.value = (initialTextBeforeMic ? initialTextBeforeMic + " " : "") + currentSpoken;
+                    input.focus();
+                    input.scrollLeft = input.scrollWidth;
                 }
 
-                // Automatic silence detection: when user pauses for 1.6s, auto-stop mic and finalize
+                // Fast silence detection: auto-stop and send ~900ms after user pauses speaking
                 if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
                 speechSilenceTimer = setTimeout(function () {
                     if (isListening && recognition) {
-                        recognition.stop();
+                        try { recognition.stop(); } catch (_) {}
+                        resetMicUI();
+                        if (input.value.trim().length > 1) {
+                            setTimeout(sendMessage, 150);
+                        }
                     }
-                }, 1600);
+                }, 900);
             };
 
             recognition.onerror = function (event) {
                 if (event.error === "no-speech") {
-                    // Ignore empty pause
                     return;
                 }
                 resetMicUI();
@@ -527,10 +532,15 @@ if (micBtn) {
 
     micBtn.addEventListener("click", function () {
         if (isListening) {
+            if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
             if (useMediaRecorderFallback) {
                 stopMediaRecording();
             } else if (recognition) {
-                recognition.stop();
+                try { recognition.stop(); } catch (_) {}
+            }
+            resetMicUI();
+            if (input.value.trim().length > 1) {
+                setTimeout(sendMessage, 150);
             }
             return;
         }

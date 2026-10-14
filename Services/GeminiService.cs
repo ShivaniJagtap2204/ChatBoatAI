@@ -418,9 +418,15 @@ RESPONSE INSTRUCTIONS & FORMATTING RULES:
                 return true;
             }
 
-            if (simple == "who are you" || simple == "what is your name")
+            if (simple == "नमस्कार" || simple == "नमस्ते" || simple == "हाय" || simple == "हॅलो" || simple == "सुप्रभात")
             {
-                reply = "I am the official AI Assistant for NMD Infotech Services (Pune). I can help you with information about our IT services, professional courses, fees, syllabus, and answer general technical questions!";
+                reply = "नमस्कार! 👋 एनएमडी इन्फोटेक सर्व्हिसेस (NMD Infotech Services) मध्ये आपले स्वागत आहे. मी आपला AI सहाय्यक आहे. मी तुम्हाला आमचे कोर्सेस (Data Science, Data Analytics, Digital Marketing), IT सर्व्हिसेस, वेब व अ‍ॅप डेव्हलपमेंट किंवा ऑफिस संपर्क तपशीलांबद्दल कशी मदत करू शकतो?";
+                return true;
+            }
+
+            if (simple == "who are you" || simple == "what is your name" || simple == "तू कोण आहेस" || simple == "तुमचे नाव काय आहे")
+            {
+                reply = "मी NMD Infotech Services चा अधिकृत AI Assistant आहे. मी तुम्हाला IT सर्व्हिसेस, ट्रेनिंग कोर्सेस (Data Science, Data Analytics), फी, कालावधी आणि संपर्क तपशीलांची माहिती देण्यास मदत करतो!";
                 return true;
             }
 
