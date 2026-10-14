@@ -328,11 +328,11 @@ if (micBtn) {
             recognition.onstart = function () {
                 isListening = true;
                 micBtn.classList.add("listening");
-                micBtn.title = currentVoiceLang === "mr-IN"
-                    ? "ऐकत आहे (मराठी)... बोलणे थांबल्यावर आपोआप उत्तर येईल"
-                    : "Listening... Speak now";
+                micBtn.title = "ऐकत आहे... बोलणे झाल्यावर 🎤 पुन्हा दाबा आणि Send बटण दाबा";
                 input.placeholder = currentVoiceLang === "mr-IN"
                     ? "🎤 मराठीत बोला... तुमचे बोलणे येथे लाईव्ह टाईप होत आहे"
+                    : currentVoiceLang === "hi-IN"
+                    ? "🎤 हिंदी में बोलें... आपका बोलना यहाँ टाइप हो रहा है"
                     : "🎤 Listening... Words are appearing live";
             };
 
@@ -356,17 +356,15 @@ if (micBtn) {
                     input.scrollLeft = input.scrollWidth;
                 }
 
-                // Fast silence detection: auto-stop and send ~900ms after user pauses speaking
+                // Silence detection: stop listening after pause, but DO NOT auto-send!
                 if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
                 speechSilenceTimer = setTimeout(function () {
                     if (isListening && recognition) {
                         try { recognition.stop(); } catch (_) {}
                         resetMicUI();
-                        if (input.value.trim().length > 1) {
-                            setTimeout(sendMessage, 150);
-                        }
+                        input.focus();
                     }
-                }, 900);
+                }, 1800);
             };
 
             recognition.onerror = function (event) {
@@ -555,9 +553,7 @@ if (micBtn) {
                 try { recognition.stop(); } catch (_) {}
             }
             resetMicUI();
-            if (input.value.trim().length > 1) {
-                setTimeout(sendMessage, 150);
-            }
+            input.focus();
             return;
         }
 

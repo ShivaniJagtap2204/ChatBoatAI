@@ -470,11 +470,13 @@ RESPONSE INSTRUCTIONS & FORMATTING RULES:
             bool hasDevanagari = Regex.IsMatch(text, @"[\u0900-\u097F]");
             if (hasDevanagari)
             {
-                if (Regex.IsMatch(text, @"[ळॅऑ]") || Regex.IsMatch(text, @"आहे|आहेत|किती|कुठे|कसा|कशी|सांगा|हवी|द्या|करा|माहिती|पत्ता|तपशील|काय|नमस्कार|शुल्क"))
+                // Marathi unique character ळ (\u0933), ॅ, ऑ and common Marathi verbs/words
+                if (Regex.IsMatch(text, @"[ळॅऑ]") || Regex.IsMatch(text, @"आहे|आहेत|किती|कुठे|कसा|कशी|कसे|सांग|सांगा|हवी|हवे|हवं|द्या|करा|माहिती|पत्ता|तपशील|काय|नमस्कार|शुल्क|होय|नाही|कोणते|कोणती|कोण|पाहिजे|शिकायचे|शिकायला|प्रवेश|फी"))
                 {
                     return "mr";
                 }
-                if (Regex.IsMatch(text, @"है|हैं|कितनी|कितना|कहाँ|कहा|कैसे|बताओ|बताइए|चाहिए|दीजिए|नमस्ते|जानकारी|क्या|शुक्रिया|धन्यवाद|होगी|होगा"))
+                // Hindi verbs/words
+                if (Regex.IsMatch(text, @"है|हैं|कितनी|कितना|कितने|कहाँ|कहा|कैसे|कैसा|कैसी|बताओ|बताइए|बताएं|चाहिए|दीजिए|दीजिये|नमस्ते|जानकारी|क्या|शुक्रिया|धन्यवाद|होगी|होगा|होंगे|सकते|सकती|सकता|रहते|रहती|करना|मुझको|मुझे|आपको|कब|कौन|कौनसा|कौनसी|फीस"))
                 {
                     return "hi";
                 }
@@ -482,12 +484,12 @@ RESPONSE INSTRUCTIONS & FORMATTING RULES:
             }
 
             // 2. Transliterated Marathi vs Hindi words
-            if (Regex.IsMatch(lower, @"\b(kiti|ahe|ahet|kuthe|sang|sanga|kasa|kashi|namaskar|mahiti|tula|mala|amhi|tumhi|kadhi|vichar|patta|shulk|deto|deta|karto|karu|shiku)\b"))
+            if (Regex.IsMatch(lower, @"\b(kiti|ahe|ahet|kuthe|sang|sanga|kasa|kashi|kase|namaskar|mahiti|tula|mala|amhi|tumhi|kadhi|vichar|patta|shulk|deto|deta|karto|karu|shiku|pahije|nave|kay|ka|kon|konte|konti|madhe|var|khali|sangto|sangshil|dya)\b"))
             {
                 return "mr";
             }
 
-            if (Regex.IsMatch(lower, @"\b(kitna|kitni|hai|hain|kaha|kahan|kaise|batao|bataiye|chahiye|namaste|dijiye|kya|shukriya|dhanyavad|kare|karega|karenge|mujhe|humko|aapko|hogi|hoga)\b"))
+            if (Regex.IsMatch(lower, @"\b(kitna|kitni|kitne|hai|hain|kaha|kahan|kaise|kaisa|kaisi|batao|bataiye|chahiye|namaste|dijiye|kya|shukriya|dhanyavad|kare|karega|karenge|mujhe|humko|aapko|hogi|hoga|honge|kab|kaun|kaunsa|kaunsi|karta|karti|karte)\b"))
             {
                 return "hi";
             }
