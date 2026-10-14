@@ -136,8 +136,20 @@ if (clearChatBtn) {
 let micBtn = document.getElementById("micBtn");
 let micLangBtn = document.getElementById("micLangBtn");
 
-// Selected voice language: default to Marathi (mr-IN), fallback to English (en-IN)
+// Selected voice language: default to Marathi (mr-IN), support Hindi (hi-IN) and English (en-IN)
 let currentVoiceLang = localStorage.getItem("chat_mic_lang") || "mr-IN";
+
+function getVoiceLangLabel(lang) {
+    if (lang === "mr-IN") return "मराठी";
+    if (lang === "hi-IN") return "हिंदी";
+    return "English";
+}
+
+function getVoiceLangTitle(lang) {
+    if (lang === "mr-IN") return "सध्याची व्हॉईस भाषा: मराठी (क्लिक करून हिंदी करा)";
+    if (lang === "hi-IN") return "वर्तमान वॉइस भाषा: हिंदी (Click for English)";
+    return "Current Voice Language: English (क्लिक करून मराठी करा)";
+}
 
 // If the Razor view hasn't been rebuilt yet, inject the mic buttons dynamically next to Send button
 if (!micLangBtn && sendBtn && sendBtn.parentElement) {
@@ -145,8 +157,8 @@ if (!micLangBtn && sendBtn && sendBtn.parentElement) {
     micLangBtn.type = "button";
     micLangBtn.id = "micLangBtn";
     micLangBtn.className = "mic-lang-btn";
-    micLangBtn.title = "व्हॉईस भाषा बदला (मराठी / English)";
-    micLangBtn.textContent = currentVoiceLang === "mr-IN" ? "मराठी" : "English";
+    micLangBtn.title = getVoiceLangTitle(currentVoiceLang);
+    micLangBtn.textContent = getVoiceLangLabel(currentVoiceLang);
     sendBtn.parentElement.insertBefore(micLangBtn, sendBtn);
 }
 
@@ -164,17 +176,21 @@ if (!micBtn && sendBtn && sendBtn.parentElement) {
 // Update language button text
 function updateLangButtonUI() {
     if (micLangBtn) {
-        micLangBtn.textContent = currentVoiceLang === "mr-IN" ? "मराठी" : "English";
-        micLangBtn.title = currentVoiceLang === "mr-IN"
-            ? "सध्याची भाषा: मराठी (क्लिक करून English करा)"
-            : "Current Language: English (Click to switch to Marathi)";
+        micLangBtn.textContent = getVoiceLangLabel(currentVoiceLang);
+        micLangBtn.title = getVoiceLangTitle(currentVoiceLang);
     }
 }
 
 if (micLangBtn) {
     updateLangButtonUI();
     micLangBtn.addEventListener("click", function () {
-        currentVoiceLang = currentVoiceLang === "mr-IN" ? "en-IN" : "mr-IN";
+        if (currentVoiceLang === "en-IN") {
+            currentVoiceLang = "mr-IN";
+        } else if (currentVoiceLang === "mr-IN") {
+            currentVoiceLang = "hi-IN";
+        } else {
+            currentVoiceLang = "en-IN";
+        }
         localStorage.setItem("chat_mic_lang", currentVoiceLang);
         updateLangButtonUI();
 

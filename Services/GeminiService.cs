@@ -74,8 +74,17 @@ namespace ChatBoatAI.Services
             var trimmedMessage = message.Trim();
             var normalizedMessage = trimmedMessage.ToLowerInvariant();
 
-            // 1. Instant friendly reply for basic greetings only
-            if (IsCommonGreeting(normalizedMessage, out string instantReply))
+            // 1. Language Detection & Strict Instructions
+            var detectedLang = DetectLanguage(trimmedMessage);
+            string langInstruction = detectedLang switch
+            {
+                "en" => "The user asked in ENGLISH. You MUST respond 100% strictly in professional, clean ENGLISH. Do NOT output Marathi or Hindi words.",
+                "hi" => "The user asked in HINDI. You MUST respond 100% strictly in polite, professional HINDI (हिंदी). Write your entire response in clear, fluent Hindi.",
+                _    => "The user asked in MARATHI. You MUST respond 100% strictly in polite, professional MARATHI (मराठी). Write your entire response in clear, fluent Marathi."
+            };
+
+            // Instant friendly reply for basic greetings only
+            if (IsCommonGreeting(normalizedMessage, detectedLang, out string instantReply))
             {
                 return instantReply;
             }
@@ -97,7 +106,7 @@ namespace ChatBoatAI.Services
             // Read Knowledge Base
             var knowledge = GetKnowledge();
 
-            // Create prompt supporting both KnowledgeBase and general AI questions
+            // Create prompt supporting both KnowledgeBase and general AI questions with strict language matching
             var prompt = $@"You are the official AI Assistant for NMD Infotech Services (The Digital NMD / NMD Pvt. Ltd. in Pune, Maharashtra, India), as well as a knowledgeable, polite general-purpose AI assistant.
 
 KNOWLEDGE BASE:
@@ -106,16 +115,17 @@ KNOWLEDGE BASE:
 USER QUESTION: {trimmedMessage}
 
 RESPONSE INSTRUCTIONS & FORMATTING RULES:
-1. COMPANY / WEBSITE / COURSES / SERVICES QUESTIONS:
+1. CRITICAL LANGUAGE DIRECTIVE (MANDATORY - HIGHEST PRIORITY):
+   - {langInstruction}
+   - Never mix languages. An English question MUST receive an English response. A Hindi question MUST receive a Hindi response. A Marathi question MUST receive a Marathi response.
+
+2. COMPANY / WEBSITE / COURSES / SERVICES QUESTIONS:
    - If the user asks about NMD Infotech Services, The Digital NMD, courses (Digital Marketing ₹25,000, Data Analytics ₹45,000, Data Science ₹85,000, Cloud, DevOps, Cyber Security), syllabus, fees, duration, placement support (170+ hiring partners, highest package up to 22 LPA), founder (Mr. Navnath Mohan Darekar), IT services (Web Development, App Development, Data Science, Data Analysis, Digital Marketing, Game Development, Business Consulting), or office address and contacts, STRICTLY use the KNOWLEDGE BASE provided above as your primary source of truth.
    - For contact information: Phone/WhatsApp +91 9049442717 / +91 8830498811, Email: info@nmdinfotechservices.com, Office: Office No. 11, Second Floor, Aditya Centeegra, FC Road, Shivajinagar, Pune 411005.
 
-2. GENERAL QUESTIONS (OUTSIDE COMPANY SCOPE):
+3. GENERAL QUESTIONS (OUTSIDE COMPANY SCOPE):
    - If the user asks ANY question that is NOT related to the company or website (e.g. general knowledge, programming, Python, coding, science, mathematics, definitions, interview questions, or general help), answer it directly, accurately, and helpfully using your own general Gemini AI intelligence!
    - Do NOT say 'this information is not in the knowledge base' for general topics. Always provide a helpful and complete answer.
-
-3. LANGUAGE MATCHING:
-   - Reply in the language used by the user: if the user asks in Marathi, reply in polite Marathi; if in Hindi, reply in Hindi; if in English, reply in English.
 
 4. STRICTLY NO .NET REFERENCES:
    - Do NOT mention .NET, ASP.NET, ASP.NET Core, or C# anywhere in your answers unless the user explicitly asks about them.
@@ -405,32 +415,84 @@ RESPONSE INSTRUCTIONS & FORMATTING RULES:
             return cleaned.Trim();
         }
 
-        // Friendly greeting for basic hellos only, so all other questions go to Gemini + KnowledgeBase
-        private bool IsCommonGreeting(string message, out string reply)
+        // Friendly greeting for basic hellos with strict language matching
+        private bool IsCommonGreeting(string message, string lang, out string reply)
         {
             reply = "";
             var simple = message.Replace("?", "").Replace("!", "").Replace(".", "").Trim();
 
             if (simple == "hi" || simple == "hello" || simple == "hey" || simple == "hii" || simple == "hiii" ||
-                simple == "namaste" || simple == "good morning" || simple == "good evening" || simple == "good afternoon")
+                simple == "good morning" || simple == "good evening" || simple == "good afternoon" ||
+                simple == "namaste" || simple == "namaskar" || simple == "नमस्कार" || simple == "नमस्ते" ||
+                simple == "हाय" || simple == "हॅलो")
             {
-                reply = "Hello! 👋 Welcome to NMD Infotech Services. I am your AI Assistant. How can I assist you with our IT Services, Courses (Data Science, Data Analytics, Digital Marketing), or projects today?";
+                if (lang == "hi")
+                {
+                    reply = "नमस्ते! 👋 NMD Infotech Services में आपका स्वागत है। मैं आपका AI असिस्टेंट हूँ। आज मैं आपकी हमारे कोर्सेस (Data Science, Data Analytics, Digital Marketing), IT सर्विसेज, या ऑफिस संपर्क की जानकारी में कैसे सहायता कर सकता हूँ?";
+                }
+                else if (lang == "mr")
+                {
+                    reply = "नमस्कार! 👋 एनएमडी इन्फोटेक सर्व्हिसेस (NMD Infotech Services) मध्ये आपले स्वागत आहे. मी आपला AI सहाय्यक आहे. मी तुम्हाला आमचे कोर्सेस (Data Science, Data Analytics, Digital Marketing), IT सर्व्हिसेस, वेब व अ‍ॅप डेव्हलपमेंट किंवा ऑफिस संपर्क तपशीलांबद्दल कशी मदत करू शकतो?";
+                }
+                else
+                {
+                    reply = "Hello! 👋 Welcome to NMD Infotech Services. I am your AI Assistant. How can I assist you with our IT Services, Career Courses (Data Science, Data Analytics, Digital Marketing), or projects today?";
+                }
                 return true;
             }
 
-            if (simple == "नमस्कार" || simple == "नमस्ते" || simple == "हाय" || simple == "हॅलो" || simple == "सुप्रभात")
+            if (simple == "who are you" || simple == "what is your name" || simple == "तू कोण आहेस" || simple == "तुमचे नाव काय आहे" || simple == "आप कौन हैं" || simple == "आपका नाम क्या है")
             {
-                reply = "नमस्कार! 👋 एनएमडी इन्फोटेक सर्व्हिसेस (NMD Infotech Services) मध्ये आपले स्वागत आहे. मी आपला AI सहाय्यक आहे. मी तुम्हाला आमचे कोर्सेस (Data Science, Data Analytics, Digital Marketing), IT सर्व्हिसेस, वेब व अ‍ॅप डेव्हलपमेंट किंवा ऑफिस संपर्क तपशीलांबद्दल कशी मदत करू शकतो?";
-                return true;
-            }
-
-            if (simple == "who are you" || simple == "what is your name" || simple == "तू कोण आहेस" || simple == "तुमचे नाव काय आहे")
-            {
-                reply = "मी NMD Infotech Services चा अधिकृत AI Assistant आहे. मी तुम्हाला IT सर्व्हिसेस, ट्रेनिंग कोर्सेस (Data Science, Data Analytics), फी, कालावधी आणि संपर्क तपशीलांची माहिती देण्यास मदत करतो!";
+                if (lang == "hi")
+                {
+                    reply = "मैं NMD Infotech Services का आधिकारिक AI असिस्टेंट हूँ। मैं आपको IT सर्विसेज, ट्रेनिंग कोर्सेस (Data Science, Data Analytics), फीस, सिलेबस और संपर्क विवरण की जानकारी प्रदान करने में मदद करता हूँ!";
+                }
+                else if (lang == "mr")
+                {
+                    reply = "मी NMD Infotech Services चा अधिकृत AI Assistant आहे. मी तुम्हाला IT सर्व्हिसेस, ट्रेनिंग कोर्सेस (Data Science, Data Analytics), फी, कालावधी आणि संपर्क तपशीलांची माहिती देण्यास मदत करतो!";
+                }
+                else
+                {
+                    reply = "I am the official AI Assistant for NMD Infotech Services (Pune). I can help you with information about our IT services, professional courses, fees, syllabus, and contact information!";
+                }
                 return true;
             }
 
             return false;
+        }
+
+        private static string DetectLanguage(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return "en";
+            var lower = text.ToLowerInvariant();
+
+            // 1. Check Devanagari script (\u0900-\u097F)
+            bool hasDevanagari = Regex.IsMatch(text, @"[\u0900-\u097F]");
+            if (hasDevanagari)
+            {
+                if (Regex.IsMatch(text, @"[ळॅऑ]") || Regex.IsMatch(text, @"आहे|आहेत|किती|कुठे|कसा|कशी|सांगा|हवी|द्या|करा|माहिती|पत्ता|तपशील|काय|नमस्कार|शुल्क"))
+                {
+                    return "mr";
+                }
+                if (Regex.IsMatch(text, @"है|हैं|कितनी|कितना|कहाँ|कहा|कैसे|बताओ|बताइए|चाहिए|दीजिए|नमस्ते|जानकारी|क्या|शुक्रिया|धन्यवाद|होगी|होगा"))
+                {
+                    return "hi";
+                }
+                return "mr";
+            }
+
+            // 2. Transliterated Marathi vs Hindi words
+            if (Regex.IsMatch(lower, @"\b(kiti|ahe|ahet|kuthe|sang|sanga|kasa|kashi|namaskar|mahiti|tula|mala|amhi|tumhi|kadhi|vichar|patta|shulk|deto|deta|karto|karu|shiku)\b"))
+            {
+                return "mr";
+            }
+
+            if (Regex.IsMatch(lower, @"\b(kitna|kitni|hai|hain|kaha|kahan|kaise|batao|bataiye|chahiye|namaste|dijiye|kya|shukriya|dhanyavad|kare|karega|karenge|mujhe|humko|aapko|hogi|hoga)\b"))
+            {
+                return "hi";
+            }
+
+            return "en";
         }
     }
 
