@@ -13,6 +13,14 @@ namespace ChatBoatAI.Services
         private static int _activeKeyIndex = 0;
         private static readonly object _keyLock = new();
 
+        // Models to try in order (ensures high availability without 503 errors)
+        private static readonly string[] AvailableModels = new[]
+        {
+            "gemini-3.5-flash-lite",
+            "gemini-3.5-flash",
+            "gemini-3.8-flash"
+        };
+
         public GeminiService(HttpClient httpClient, IConfiguration configuration, IMemoryCache cache)
         {
             _httpClient = httpClient;
@@ -23,23 +31,37 @@ namespace ChatBoatAI.Services
             _httpClient.Timeout = TimeSpan.FromSeconds(45);
         }
 
-        // Read knowledge from TXT file
+        // Read knowledge from TXT file safely from multiple possible locations
         private string GetKnowledge()
         {
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "KnowledgeBase.txt");
-
-            if (!File.Exists(filePath))
+            var paths = new[]
             {
-                throw new Exception("Knowledge file not found: " + filePath);
+                Path.Combine(Directory.GetCurrentDirectory(), "Data", "KnowledgeBase.txt"),
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "KnowledgeBase.txt"),
+                Path.Combine(Directory.GetCurrentDirectory(), "KnowledgeBase.txt")
+            };
+
+            foreach (var path in paths)
+            {
+                if (File.Exists(path))
+                {
+                    return File.ReadAllText(path);
+                }
             }
 
-            return File.ReadAllText(filePath);
+            return string.Empty;
         }
 
-        // Get list of configured API keys (supports comma-separated multiple keys)
+        // Get list of configured API keys (supports configuration & environment variables)
         private List<string> GetConfiguredKeys()
         {
-            var rawKeys = _configuration["Gemini:ApiKey"] ?? _configuration["Gemini:ApiKeys"] ?? "";
+            var rawKeys = _configuration["Gemini:ApiKey"]
+                       ?? _configuration["Gemini__ApiKey"]
+                       ?? _configuration["Gemini:ApiKeys"]
+                       ?? Environment.GetEnvironmentVariable("Gemini__ApiKey")
+                       ?? Environment.GetEnvironmentVariable("Gemini:ApiKey")
+                       ?? "";
+
             return rawKeys.Split(new[] { ',', ';', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                           .ToList();
         }
@@ -52,13 +74,13 @@ namespace ChatBoatAI.Services
             var trimmedMessage = message.Trim();
             var normalizedMessage = trimmedMessage.ToLowerInvariant();
 
-            // 1. Instant reply for common greetings and contact requests to save API quota
+            // 1. Instant friendly reply for basic greetings only
             if (IsCommonGreeting(normalizedMessage, out string instantReply))
             {
                 return instantReply;
             }
 
-            // 2. Check In-Memory Cache (serves frequent / identical questions instantly with 0 quota cost)
+            // 2. Check In-Memory Cache (serves identical questions instantly with 0 quota cost)
             var cacheKey = $"chat_query_{normalizedMessage}";
             if (_cache.TryGetValue(cacheKey, out string? cachedResponse) && !string.IsNullOrWhiteSpace(cachedResponse))
             {
@@ -69,34 +91,42 @@ namespace ChatBoatAI.Services
             var apiKeys = GetConfiguredKeys();
             if (apiKeys.Count == 0)
             {
-                throw new Exception("Gemini API key is missing. Please configure Gemini:ApiKey.");
+                throw new Exception("Gemini API key is missing. Please configure Gemini:ApiKey or set Gemini__ApiKey in Environment Variables.");
             }
 
             // Read Knowledge Base
             var knowledge = GetKnowledge();
 
-            // Create prompt with strict no-asterisks formatting and general knowledge fallback
-            var prompt = $@"You are the official AI Assistant for NMD Infotech Services (Pune, Maharashtra, India), and also a helpful general-purpose AI assistant.
+            // Create prompt supporting both KnowledgeBase and general AI questions
+            var prompt = $@"You are the official AI Assistant for NMD Infotech Services (The Digital NMD / NMD Pvt. Ltd. in Pune, Maharashtra, India), as well as a knowledgeable, polite general-purpose AI assistant.
 
 KNOWLEDGE BASE:
 {knowledge}
 
 USER QUESTION: {trimmedMessage}
 
-CRITICAL INSTRUCTIONS & FORMATTING RULES:
-1. WEBSITE / COMPANY QUESTIONS:
-   - If the question is about NMD Infotech Services, our IT services (Web Development, App Development, Data Science, Data Analysis, Digital Marketing, Game Development, Business Consulting), founder, or contact details, use the Knowledge Base above.
-   - For contact information, provide Phone/WhatsApp: +91 9049442717, Email: info@nmdinfotechservices.com, Office: Office No. 11, Second Floor, Aditya Centeegra, FC Road, Shivajinagar, Pune 411005.
-2. GENERAL QUESTIONS (NOT RELATED TO THE WEBSITE):
-   - If the user asks ANY question that is not related to the website or company (e.g., general knowledge, technology, coding, science, definitions, or any general topic), answer it directly, accurately, and helpfully using your own Gemini AI knowledge!
-   - Never refuse general questions or say 'information is not in the knowledge base' for general topics.
-3. STRICTLY NO .NET REFERENCES:
-   - Do NOT mention .NET, ASP.NET, ASP.NET Core, or C# anywhere in your answers.
-4. STRICTLY NO STARS OR ASTERISKS:
-   - Do NOT use markdown bold asterisks (** or *). Do NOT output star characters anywhere in your response.
-5. FORMATTING & TONE:
-   - Use clean, well-spaced paragraphs. For lists, use clean bullets like '• ' or simple numbers (1, 2, 3) or dashes (-).
-   - Keep the language professional, polite, clear, and easy to understand.
+RESPONSE INSTRUCTIONS & FORMATTING RULES:
+1. COMPANY / WEBSITE / COURSES / SERVICES QUESTIONS:
+   - If the user asks about NMD Infotech Services, The Digital NMD, courses (Digital Marketing ₹25,000, Data Analytics ₹45,000, Data Science ₹85,000, Cloud, DevOps, Cyber Security), syllabus, fees, duration, placement support (170+ hiring partners, highest package up to 22 LPA), founder (Mr. Navnath Mohan Darekar), IT services (Web Development, App Development, Data Science, Data Analysis, Digital Marketing, Game Development, Business Consulting), or office address and contacts, STRICTLY use the KNOWLEDGE BASE provided above as your primary source of truth.
+   - For contact information: Phone/WhatsApp +91 9049442717 / +91 8830498811, Email: info@nmdinfotechservices.com, Office: Office No. 11, Second Floor, Aditya Centeegra, FC Road, Shivajinagar, Pune 411005.
+
+2. GENERAL QUESTIONS (OUTSIDE COMPANY SCOPE):
+   - If the user asks ANY question that is NOT related to the company or website (e.g. general knowledge, programming, Python, coding, science, mathematics, definitions, interview questions, or general help), answer it directly, accurately, and helpfully using your own general Gemini AI intelligence!
+   - Do NOT say 'this information is not in the knowledge base' for general topics. Always provide a helpful and complete answer.
+
+3. LANGUAGE MATCHING:
+   - Reply in the language used by the user: if the user asks in Marathi, reply in polite Marathi; if in Hindi, reply in Hindi; if in English, reply in English.
+
+4. STRICTLY NO .NET REFERENCES:
+   - Do NOT mention .NET, ASP.NET, ASP.NET Core, or C# anywhere in your answers unless the user explicitly asks about them.
+
+5. STRICTLY NO STARS OR ASTERISKS:
+   - Do NOT use markdown bold asterisks (** or *). Never output asterisk characters in your response.
+
+6. FORMATTING & TONE:
+   - Use clean, well-spaced paragraphs.
+   - For lists, use simple bullet points like '• ' or numbers (1, 2, 3) or dashes (-).
+   - Keep answers professional, polite, warm, and easy to read.
 ";
 
             var requestBody = new
@@ -117,7 +147,7 @@ CRITICAL INSTRUCTIONS & FORMATTING RULES:
                 generationConfig = new
                 {
                     temperature = 0.4,
-                    maxOutputTokens = 1000
+                    maxOutputTokens = 1200
                 }
             };
 
@@ -144,10 +174,9 @@ CRITICAL INSTRUCTIONS & FORMATTING RULES:
 
                     if (!string.IsNullOrWhiteSpace(cleanAnswer))
                     {
-                        // Cache response for 24 hours so repeat questions consume 0 API quota
+                        // Cache response for 24 hours
                         _cache.Set(cacheKey, cleanAnswer, TimeSpan.FromHours(24));
 
-                        // Set active key to current successful key
                         lock (_keyLock)
                         {
                             _activeKeyIndex = currentKeyIndex;
@@ -159,12 +188,11 @@ CRITICAL INSTRUCTIONS & FORMATTING RULES:
                 catch (QuotaExceededException)
                 {
                     encounteredQuotaLimit = true;
-                    // Rotate to next key if available
                     lock (_keyLock)
                     {
                         _activeKeyIndex = (currentKeyIndex + 1) % apiKeys.Count;
                     }
-                    continue; // Try next key
+                    continue;
                 }
                 catch (Exception)
                 {
@@ -278,54 +306,80 @@ CRITICAL INSTRUCTIONS & FORMATTING RULES:
 
         private async Task<string> CallGeminiApiAsync(string apiKey, string jsonPayload)
         {
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key={apiKey}";
+            Exception? lastException = null;
 
-            for (int attempt = 1; attempt <= 2; attempt++)
+            // Try each available model in order to guarantee fast and reliable answers
+            foreach (var model in AvailableModels)
             {
-                try
+                var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
+
+                for (int attempt = 1; attempt <= 2; attempt++)
                 {
-                    using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PostAsync(url, content);
-                    var responseJson = await response.Content.ReadAsStringAsync();
-
-                    // 429 = Rate limit / Quota exceeded
-                    if ((int)response.StatusCode == 429)
+                    try
                     {
-                        throw new QuotaExceededException("Quota exceeded for this API key.");
-                    }
+                        using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+                        var response = await _httpClient.PostAsync(url, content);
+                        var responseJson = await response.Content.ReadAsStringAsync();
 
-                    // 503 = Model busy -> quick retry
-                    if ((int)response.StatusCode == 503 && attempt < 2)
+                        // 429 = Rate limit / Quota exceeded
+                        if ((int)response.StatusCode == 429)
+                        {
+                            throw new QuotaExceededException("Quota exceeded for this API key.");
+                        }
+
+                        // 503 (Model busy) or 404 (Not found) -> try next model
+                        if ((int)response.StatusCode == 503 || (int)response.StatusCode == 404)
+                        {
+                            lastException = new Exception($"Model {model} returned {response.StatusCode}: {responseJson}");
+                            break; // break retry loop to try next model
+                        }
+
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            lastException = new Exception($"Gemini API Error ({model}): {responseJson}");
+                            break;
+                        }
+
+                        using var document = JsonDocument.Parse(responseJson);
+                        if (document.RootElement.TryGetProperty("candidates", out var candidates) &&
+                            candidates.GetArrayLength() > 0 &&
+                            candidates[0].TryGetProperty("content", out var candContent) &&
+                            candContent.TryGetProperty("parts", out var parts) &&
+                            parts.GetArrayLength() > 0 &&
+                            parts[0].TryGetProperty("text", out var textProp))
+                        {
+                            var answer = textProp.GetString();
+                            if (!string.IsNullOrWhiteSpace(answer))
+                                return answer;
+                        }
+
+                        return "No response received.";
+                    }
+                    catch (QuotaExceededException)
                     {
-                        await Task.Delay(2000);
-                        continue;
+                        throw;
                     }
-
-                    if (!response.IsSuccessStatusCode)
+                    catch (TaskCanceledException)
                     {
-                        throw new Exception($"Gemini API Error: {responseJson}");
+                        if (attempt == 2)
+                        {
+                            lastException = new Exception("Gemini request timed out.");
+                            break;
+                        }
+                        await Task.Delay(1000);
                     }
-
-                    using var document = JsonDocument.Parse(responseJson);
-                    var answer = document.RootElement
-                        .GetProperty("candidates")[0]
-                        .GetProperty("content")
-                        .GetProperty("parts")[0]
-                        .GetProperty("text")
-                        .GetString();
-
-                    return answer ?? "No response received.";
-                }
-                catch (TaskCanceledException)
-                {
-                    if (attempt == 2)
-                        throw new Exception("Gemini request timed out. Please try again.");
-
-                    await Task.Delay(1500);
+                    catch (Exception ex)
+                    {
+                        lastException = ex;
+                        break;
+                    }
                 }
             }
 
-            return "";
+            if (lastException != null)
+                throw lastException;
+
+            return "No response received.";
         }
 
         // Clean any residual markdown asterisks or formatting so stars never appear in the output
@@ -351,6 +405,7 @@ CRITICAL INSTRUCTIONS & FORMATTING RULES:
             return cleaned.Trim();
         }
 
+        // Friendly greeting for basic hellos only, so all other questions go to Gemini + KnowledgeBase
         private bool IsCommonGreeting(string message, out string reply)
         {
             reply = "";
@@ -359,37 +414,13 @@ CRITICAL INSTRUCTIONS & FORMATTING RULES:
             if (simple == "hi" || simple == "hello" || simple == "hey" || simple == "hii" || simple == "hiii" ||
                 simple == "namaste" || simple == "good morning" || simple == "good evening" || simple == "good afternoon")
             {
-                reply = "Hello! 👋 Welcome to NMD Infotech Services. I am your AI Assistant. How can I assist you with our Web Development, Mobile Apps, Data Science, Data Analysis, Digital Marketing, or Business Consulting services today?";
+                reply = "Hello! 👋 Welcome to NMD Infotech Services. I am your AI Assistant. How can I assist you with our IT Services, Courses (Data Science, Data Analytics, Digital Marketing), or projects today?";
                 return true;
             }
 
             if (simple == "who are you" || simple == "what is your name")
             {
-                reply = "I am the official AI Assistant for NMD Infotech Services (Pune). I can help you with information about our IT services, custom software, app development, data analytics, digital marketing, and contact details!";
-                return true;
-            }
-
-            if (simple == "what services does nmd infotech provide" || simple == "our services" || simple == "services")
-            {
-                reply = "NMD Infotech Services offers comprehensive IT and digital solutions tailored to your business:\n\n• Web Development (Custom websites, React, Angular, Node.js, E-commerce)\n• Mobile App Development (iOS, Android, and Cross-Platform Apps)\n• Data Science & Machine Learning\n• Data Analysis & Power BI Dashboards\n• Digital Marketing (SEO, Social Media Marketing, Google Ads)\n• Game Development (Interactive 2D & 3D Games)\n• Strategic Business & IT Consulting";
-                return true;
-            }
-
-            if (simple == "tell me about web and app development")
-            {
-                reply = "At NMD Infotech Services, we build high-performance Web and Mobile Applications:\n\n• Web Development: Responsive corporate websites, SaaS platforms, and e-commerce portals using React, Angular, Node.js, and modern databases.\n• Mobile App Development: User-friendly Android, iOS, and cross-platform apps (Flutter / React Native) with secure backend APIs and Play Store / App Store deployment.";
-                return true;
-            }
-
-            if (simple == "tell me about data science and analytics")
-            {
-                reply = "Our Data Science and Data Analysis services help transform raw numbers into actionable business growth:\n\n• Data Analysis: KPI tracking, interactive Power BI & Tableau dashboards, SQL reporting, and business intelligence.\n• Data Science: Data cleansing, predictive modeling, machine learning algorithms, and automated insights to drive smarter business decisions.";
-                return true;
-            }
-
-            if (simple == "what is your office address and contact number" || simple == "contact" || simple == "contact us" || simple == "phone" || simple == "address" || simple == "location" || simple == "office" || simple == "number")
-            {
-                reply = "Here are the official contact details for NMD Infotech Services:\n\n• Office Address: Office No. 11, Second Floor, NMD PVT LTD, Aditya Centeegra, Fergusson College Road (FC Road), Shivajinagar, Pune, Maharashtra 411005\n• Phone & WhatsApp: +91 9049442717\n• Email: info@nmdinfotechservices.com | hr@nmdinfotechservices.com\n• Website: https://www.nmdinfotechservices.com/";
+                reply = "I am the official AI Assistant for NMD Infotech Services (Pune). I can help you with information about our IT services, professional courses, fees, syllabus, and answer general technical questions!";
                 return true;
             }
 
