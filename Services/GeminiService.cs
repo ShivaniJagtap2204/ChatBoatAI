@@ -120,7 +120,7 @@ RESPONSE INSTRUCTIONS & FORMATTING RULES:
    - Never mix languages. An English question MUST receive an English response. A Hindi question MUST receive a Hindi response. A Marathi question MUST receive a Marathi response.
 
 2. COMPANY / WEBSITE / COURSES / SERVICES QUESTIONS:
-   - If the user asks about NMD Infotech Services, The Digital NMD, courses (Digital Marketing ₹25,000, Data Analytics ₹45,000, Data Science ₹85,000, Cloud, DevOps, Cyber Security), syllabus, fees, duration, placement support (170+ hiring partners, highest package up to 22 LPA), founder (Mr. Navnath Mohan Darekar), IT services (Web Development, App Development, Data Science, Data Analysis, Digital Marketing, Game Development, Business Consulting), or office address and contacts, STRICTLY use the KNOWLEDGE BASE provided above as your primary source of truth.
+   - If the user asks about NMD Infotech Services, The Digital NMD, courses (Digital Marketing ₹25,000, Data Analytics ₹45,000, Data Science ₹85,000, Cloud, DevOps, Cyber Security), syllabus, fees, duration, placement support (170+ hiring partners, highest package up to 22 LPA), founder (Mr. Navnath Mohan Darekar), IT services (Web Development, App Development, Data Science, Data Analysis, Digital Marketing, Game Development, Business Consulting), corporate clients and testimonials (including JP Shroff / Jaiprakash Pravinchandra Shroff, Kolte Patil, MCA, Baramati Agro), or office address and contacts, STRICTLY use the KNOWLEDGE BASE provided above as your primary source of truth.
    - For contact information: Phone/WhatsApp +91 9049442717 / +91 8830498811, Email: info@nmdinfotechservices.com, Office: Office No. 11, Second Floor, Aditya Centeegra, FC Road, Shivajinagar, Pune 411005.
 
 3. GENERAL QUESTIONS (OUTSIDE COMPANY SCOPE):
@@ -454,6 +454,23 @@ RESPONSE INSTRUCTIONS & FORMATTING RULES:
                 else
                 {
                     reply = "I am the official AI Assistant for NMD Infotech Services (Pune). I can help you with information about our IT services, professional courses, fees, syllabus, and contact information!";
+                }
+                return true;
+            }
+
+            if (simple.Contains("jp shroff") || simple.Contains("shroff") || simple.Contains("जे पी श्रॉफ") || simple.Contains("जेपी श्रॉफ") || simple.Contains("श्रॉफ"))
+            {
+                if (lang == "hi")
+                {
+                    reply = "श्री जे. पी. श्रॉफ (Jaiprakash Pravinchandra Shroff) 1958 में स्थापित Shroff Group के प्रमुख और प्रख्यात उद्योगपति हैं। वे NMD Infotech Services के सम्मानित कॉर्पोरेट क्लाइंट हैं और उन्होंने 5.0 रेटिंग के साथ समीक्षा दी है: 'Best business IT consulting with amazing insights.' उन्होंने COEP से सिविल इंजीनियरिंग की है और उन्हें सूर्यदत्ता लाइफटाइम अचीवमेंट एवं निर्माण रत्न पुरस्कार से सम्मानित किया गया है।";
+                }
+                else if (lang == "mr")
+                {
+                    reply = "श्री. जे. पी. श्रॉफ (Jaiprakash Pravinchandra Shroff) हे 1958 मध्ये स्थापन झालेल्या Shroff Group चे प्रमुख व नामवंत उद्योगपती आहेत. ते NMD Infotech Services चे सन्माननीय कॉर्पोरेट क्लायंट (Client) असून त्यांनी NMD ला 5.0 स्टार रेटिंग देत 'Best business IT consulting with amazing insights' असा अभिप्राय दिला आहे. त्यांनी COEP मधून सिव्हिल इंजिनिअरिंग केले असून त्यांना सूर्यदत्ता लाइफटाइम अचिव्हमेंट व निर्माण रत्न पुरस्कार मिळालेले आहेत.";
+                }
+                else
+                {
+                    reply = "Mr. JP Shroff (Jaiprakash Pravinchandra Shroff) is a prominent industrialist and leader associated with the Shroff Group (established in 1958). He is a valued corporate client of NMD Infotech Services, giving a 5.0-star testimonial: 'Best business IT consulting with amazing insights.' He holds a B.E. in Civil Engineering from COEP and is a recipient of the Suryadatta National Lifetime Achievement Award and Nirman Ratna Award.";
                 }
                 return true;
             }
