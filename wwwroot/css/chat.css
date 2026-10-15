@@ -315,6 +315,68 @@ body {
 }
 
 /* ===================================================
+   TEXT-TO-SPEECH (TTS) SPEAKER BUTTON & ACTIONS
+   =================================================== */
+.ai-bubble-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 76%;
+}
+
+.ai-bubble-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+    margin-left: 4px;
+}
+
+.tts-speak-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    border-radius: 14px;
+    padding: 3px 10px;
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1.2;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.tts-speak-btn:hover {
+    background: #eff6ff;
+    color: #0d47a1;
+    border-color: #93c5fd;
+    transform: translateY(-1px);
+}
+
+.tts-speak-btn.is-speaking {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+    animation: pulseSpeaker 1.4s infinite;
+}
+
+.tts-speak-btn svg {
+    flex-shrink: 0;
+}
+
+@keyframes pulseSpeaker {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.35);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+    }
+}
+
+/* ===================================================
    INPUT AREA
    =================================================== */
 .chat-input {

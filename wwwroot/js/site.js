@@ -126,6 +126,142 @@ function transliterateHinglishToMarathi(text) {
     return result;
 }
 
+// ===================================================
+// TEXT-TO-SPEECH (TTS) SYSTEM
+// ===================================================
+let activeSpeakerBtn = null;
+let lastInputWasVoice = false;
+
+function stopSpeaking() {
+    if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+    }
+    if (activeSpeakerBtn) {
+        activeSpeakerBtn.classList.remove("is-speaking");
+        const label = activeSpeakerBtn.querySelector(".tts-label");
+        if (label) label.textContent = "Listen";
+        activeSpeakerBtn = null;
+    }
+}
+
+function getBestVoiceForLanguage(langCode) {
+    if (!("speechSynthesis" in window)) return null;
+    const voices = window.speechSynthesis.getVoices() || [];
+    if (voices.length === 0) return null;
+
+    const target = (langCode || "en-IN").toLowerCase();
+    const prefix = target.split("-")[0];
+
+    // 1. Exact match e.g. "mr-in", "hi-in", "en-in"
+    let match = voices.find(v => v.lang && v.lang.toLowerCase() === target);
+    if (match) return match;
+
+    // 2. Prefix match e.g. starts with "mr", "hi", "en"
+    match = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(prefix));
+    if (match) return match;
+
+    // 3. Fallback for Marathi: if no Marathi voice on device, use Hindi voice
+    if (prefix === "mr") {
+        match = voices.find(v => v.lang && v.lang.toLowerCase().startsWith("hi"));
+        if (match) return match;
+    }
+
+    // 4. Fallback to English (India) or first available voice
+    return voices.find(v => v.lang && v.lang.toLowerCase().includes("in")) || voices[0] || null;
+}
+
+function speakText(text, btnElement) {
+    if (!("speechSynthesis" in window)) {
+        return;
+    }
+
+    if (activeSpeakerBtn === btnElement && btnElement) {
+        stopSpeaking();
+        return;
+    }
+
+    stopSpeaking();
+
+    let speechString = text
+        .replace(/•/g, " ")
+        .replace(/₹/g, "Rupees ")
+        .replace(/[\u{1F300}-\u{1F9FF}]/gu, " ")
+        .replace(/\n+/g, ". ")
+        .trim();
+
+    if (!speechString) return;
+
+    const detected = detectLanguage(speechString);
+    let langCode = "en-IN";
+    if (detected === "mr") langCode = "mr-IN";
+    else if (detected === "hi") langCode = "hi-IN";
+
+    const utterance = new SpeechSynthesisUtterance(speechString);
+    utterance.lang = langCode;
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+
+    const voice = getBestVoiceForLanguage(langCode);
+    if (voice) {
+        utterance.voice = voice;
+    }
+
+    if (btnElement) {
+        activeSpeakerBtn = btnElement;
+        btnElement.classList.add("is-speaking");
+        const label = btnElement.querySelector(".tts-label");
+        if (label) label.textContent = "Stop";
+    }
+
+    utterance.onend = function () {
+        stopSpeaking();
+    };
+
+    utterance.onerror = function () {
+        stopSpeaking();
+    };
+
+    window.speechSynthesis.speak(utterance);
+}
+
+if ("speechSynthesis" in window && window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+    };
+}
+
+function appendTTSButton(aiMessageElement, replyText) {
+    if (!replyText || !("speechSynthesis" in window)) return null;
+
+    const actionsDiv = document.createElement("div");
+    actionsDiv.className = "ai-bubble-actions";
+
+    const speakBtn = document.createElement("button");
+    speakBtn.type = "button";
+    speakBtn.className = "tts-speak-btn";
+    speakBtn.title = "Listen to answer (ऐका / सुनिए / Listen)";
+    speakBtn.innerHTML = `
+        <svg class="tts-icon-speaker" viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>
+        <span class="tts-label">Listen</span>
+    `;
+
+    speakBtn.addEventListener("click", () => {
+        speakText(replyText, speakBtn);
+    });
+
+    actionsDiv.appendChild(speakBtn);
+    const wrap = aiMessageElement.querySelector(".ai-bubble-wrap");
+    if (wrap) {
+        wrap.appendChild(actionsDiv);
+    } else {
+        aiMessageElement.appendChild(actionsDiv);
+    }
+
+    return speakBtn;
+}
+
 async function sendMessage() {
     const rawText = input.value.trim();
     if (!rawText) return;
@@ -151,20 +287,23 @@ async function sendMessage() {
     sendBtn.textContent = "Sending...";
     sendBtn.disabled = true;
 
-    // AI message with typing animation
+    // AI message with typing animation inside wrapper
     const aiMessage = document.createElement("div");
     aiMessage.className = "message ai-message";
     aiMessage.innerHTML = `
         <div class="ai-icon">NMD</div>
-        <div class="message-bubble typing">
-            <span></span>
-            <span></span>
-            <span></span>
+        <div class="ai-bubble-wrap">
+            <div class="message-bubble typing">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </div>
     `;
     messages.appendChild(aiMessage);
     messages.scrollTop = messages.scrollHeight;
 
+    let finalFormatted = "";
     try {
         const response = await fetch("/Chat/SendMessage", {
             method: "POST",
@@ -184,18 +323,29 @@ async function sendMessage() {
 
         const bubble = aiMessage.querySelector(".message-bubble");
         bubble.classList.remove("typing");
-        bubble.textContent = formatResponseText(data.response);
+        finalFormatted = formatResponseText(data.response);
+        bubble.textContent = finalFormatted;
     }
     catch (error) {
         const bubble = aiMessage.querySelector(".message-bubble");
         bubble.classList.remove("typing");
-        bubble.textContent = "Error - " + error.message;
+        finalFormatted = "Error - " + error.message;
+        bubble.textContent = finalFormatted;
     }
     finally {
         sendBtn.textContent = "Send";
         sendBtn.disabled = false;
         messages.scrollTop = messages.scrollHeight;
     }
+
+    // Append TTS speaker button
+    if (finalFormatted && !finalFormatted.startsWith("Error")) {
+        const speakBtn = appendTTSButton(aiMessage, finalFormatted);
+        if (lastInputWasVoice && speakBtn) {
+            speakText(finalFormatted, speakBtn);
+        }
+    }
+    lastInputWasVoice = false;
 }
 
 // Send button
@@ -209,6 +359,10 @@ input.addEventListener("keydown", function (event) {
     }
 });
 
+input.addEventListener("input", function () {
+    lastInputWasVoice = false;
+});
+
 function sendSuggestion(text) {
     input.value = text;
     sendMessage();
@@ -218,6 +372,7 @@ const clearChatBtn = document.getElementById("clearChatBtn");
 
 if (clearChatBtn) {
     clearChatBtn.addEventListener("click", function () {
+        stopSpeaking();
         messages.innerHTML = `
             <div class="welcome-message">
                 <div class="welcome-icon">
@@ -470,9 +625,15 @@ if (micBtn) {
                     }
                 }
 
-                const currentSpoken = (finalTranscript + interimTranscript).trim();
+                let currentSpoken = (finalTranscript + interimTranscript).trim();
                 if (currentSpoken) {
+                    if (currentVoiceLang === "hi-IN" && /[a-zA-Z]/.test(currentSpoken)) {
+                        currentSpoken = transliterateHinglishToHindi(currentSpoken);
+                    } else if (currentVoiceLang === "mr-IN" && /[a-zA-Z]/.test(currentSpoken)) {
+                        currentSpoken = transliterateHinglishToMarathi(currentSpoken);
+                    }
                     input.value = (initialTextBeforeMic ? initialTextBeforeMic + " " : "") + currentSpoken;
+                    lastInputWasVoice = true;
                     input.focus();
                     input.scrollLeft = input.scrollWidth;
                 }
@@ -600,6 +761,7 @@ if (micBtn) {
                             const text = data.transcript.trim();
                             if (text) {
                                 input.value = (input.value ? input.value.trim() + " " : "") + text;
+                                lastInputWasVoice = true;
                                 input.focus();
                             }
                         }
