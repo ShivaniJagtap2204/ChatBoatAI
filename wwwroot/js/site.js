@@ -14,15 +14,136 @@ function formatResponseText(rawText) {
     return text.trim();
 }
 
+function detectLanguage(text) {
+    if (!text) return "en";
+    const lower = text.toLowerCase();
+    const hasDevanagari = /[\u0900-\u097F]/.test(text);
+
+    if (hasDevanagari) {
+        if (/ळ|ॅ|ऑ/.test(text) || /आहे|आहेत|किती|कुठे|कसा|कशी|कसे|सांग|सांगा|हवी|हवे|हवं|द्या|करा|माहिती|पत्ता|तपशील|काय|नमस्कार|शुल्क|होय|नाही|कोणते|कोणती|कोण|पाहिजे|शिकायचे|शिकायला|प्रवेश|फी/.test(text)) {
+            return "mr";
+        }
+        if (/है|हैं|कितनी|कितना|कितने|कहाँ|कहा|कैसे|कैसा|कैसी|बताओ|बताइए|बताएं|चाहिए|दीजिए|दीजिये|नमस्ते|जानकारी|क्या|शुक्रिया|धन्यवाद|होगी|होगा|होंगे|सकते|सकती|सकता|रहते|रहती|करना|मुझको|मुझे|आपको|कब|कौन|कौनसा|कौनसी|फीस/.test(text)) {
+            return "hi";
+        }
+        return "mr";
+    }
+
+    const marathiWords = /\b(kiti|ahe|ahet|kuthe|sang|sanga|kasa|kashi|kase|namaskar|mahiti|tula|mala|amhi|tumhi|kadhi|vichar|patta|shulk|deto|deta|karto|karu|shiku|pahije|nave|kay|ka|kon|konte|konti|madhe|var|khali|sangto|sangshil|dya)\b/i;
+    const hindiWords = /\b(kitna|kitni|kitne|hai|hain|kaha|kahan|kaise|kaisa|kaisi|batao|bataiye|chahiye|namaste|dijiye|kya|shukriya|dhanyavad|kare|karega|karenge|mujhe|humko|aapko|hogi|hoga|honge|kab|kaun|kaunsa|kaunsi|karta|karti|karte)\b/i;
+
+    if (marathiWords.test(lower)) return "mr";
+    if (hindiWords.test(lower)) return "hi";
+    return "en";
+}
+
+function transliterateHinglishToHindi(text) {
+    if (!text) return "";
+    if (/[\u0900-\u097F]/.test(text) && !/[a-zA-Z]/.test(text)) return text;
+
+    let result = text;
+    const phraseMap = [
+        [/\bdata\s+science\s+with\s+ai\b/gi, "डेटा साइंस विद AI"],
+        [/\bdata\s+science\b/gi, "डेटा साइंस"],
+        [/\bdata\s+analytics\s+with\s+ai\b/gi, "डेटा एनालिटिक्स विद AI"],
+        [/\bdata\s+analytics\b/gi, "डेटा एनालिटिक्स"],
+        [/\bdata\s+analysis\b/gi, "डेटा एनालिसिस"],
+        [/\bdigital\s+marketing\s+with\s+ai\b/gi, "डिजिटल मार्केटिंग विद AI"],
+        [/\bdigital\s+marketing\b/gi, "डिजिटल मार्केटिंग"],
+        [/\bweb\s+development\b/gi, "वेब डेवलपमेंट"],
+        [/\bapp\s+development\b/gi, "ऐप डेवलपमेंट"],
+        [/\bjp\s+shroff\b/gi, "जेपी श्रॉफ"],
+        [/\bnavnath\s+darekar\b/gi, "नवनाथ दरेकर"],
+        [/\bnmd\s+infotech\b/gi, "NMD इन्फोटेक"]
+    ];
+
+    for (const [regex, rep] of phraseMap) {
+        result = result.replace(regex, rep);
+    }
+
+    const wordMap = {
+        "fees": "फीस", "fee": "फीस", "kitni": "कितनी", "kitna": "कितना", "kitne": "कितने",
+        "hai": "है", "hain": "हैं", "he": "है", "kaha": "कहाँ", "kahan": "कहाँ", "kidhar": "किधर",
+        "kaise": "कैसे", "kaisa": "कैसा", "kaisi": "कैसी", "kya": "क्या", "kyun": "क्यों",
+        "kab": "कब", "kaun": "कौन", "kon": "कौन", "aap": "आप", "tum": "तुम",
+        "aapka": "आपका", "aapki": "आपकी", "aapke": "आपके", "mera": "मेरा", "meri": "मेरी",
+        "mujhe": "मुझे", "hum": "हम", "main": "मैं", "batao": "बताओ", "bataiye": "बताइए",
+        "chahiye": "चाहिए", "dijiye": "दीजिए", "karna": "करना", "kare": "करे", "karenge": "करेंगे",
+        "course": "कोर्स", "courses": "कोर्सेस", "duration": "अवधि", "months": "महीने",
+        "syllabus": "सिलेबस", "placement": "प्लेसमेंट", "job": "जॉब", "naukri": "नौकरी",
+        "office": "ऑफिस", "pata": "पता", "address": "पता", "contact": "संपर्क", "number": "नंबर",
+        "phone": "फोन", "services": "सेवाएं", "service": "सर्विस", "founder": "संस्थापक",
+        "namaste": "नमस्ते", "dhanyavad": "धन्यवाद", "shukriya": "शुक्रिया", "aur": "और",
+        "bhi": "भी", "me": "में", "mein": "में", "se": "से", "par": "पर", "ki": "की", "ka": "का", "ke": "के",
+        "hoga": "होगा", "hogi": "होगी", "honge": "होंगे", "sakte": "सकते", "nahi": "नहीं", "haan": "हाँ",
+        "pune": "पुणे", "shroff": "श्रॉफ"
+    };
+
+    result = result.replace(/\b[a-zA-Z]+\b/g, function (match) {
+        const lower = match.toLowerCase();
+        return wordMap[lower] || match;
+    });
+
+    return result;
+}
+
+function transliterateHinglishToMarathi(text) {
+    if (!text) return "";
+    if (/[\u0900-\u097F]/.test(text) && !/[a-zA-Z]/.test(text)) return text;
+
+    let result = text;
+    const phraseMap = [
+        [/\bdata\s+science\b/gi, "डेटा सायन्स"],
+        [/\bdata\s+analytics\b/gi, "डेटा अ‍ॅनालिटिक्स"],
+        [/\bdigital\s+marketing\b/gi, "डिजिटल मार्केटिंग"],
+        [/\bweb\s+development\b/gi, "वेब डेव्हलपमेंट"],
+        [/\bapp\s+development\b/gi, "अ‍ॅप डेव्हलपमेंट"],
+        [/\bjp\s+shroff\b/gi, "जेपी श्रॉफ"],
+        [/\bnavnath\s+darekar\b/gi, "नवनाथ दरेकर"],
+        [/\bnmd\s+infotech\b/gi, "NMD इन्फोटेक"]
+    ];
+
+    for (const [regex, rep] of phraseMap) {
+        result = result.replace(regex, rep);
+    }
+
+    const wordMap = {
+        "fee": "फी", "fees": "फी", "chi": "ची", "cha": "चा", "che": "चे",
+        "kiti": "किती", "ahe": "आहे", "ahet": "आहेत", "kuthe": "कुठे", "kay": "काय",
+        "kasa": "कसा", "kashi": "कशी", "kase": "कसे", "kadhi": "कधी", "kon": "कोण",
+        "tula": "तुला", "mala": "मला", "tu": "तू", "sang": "सांग", "sanga": "सांगा",
+        "mahiti": "माहिती", "course": "कोर्स", "duration": "कालावधी", "months": "महिने",
+        "office": "ऑफिस", "patta": "पत्ता", "contact": "संपर्क", "number": "नंबर",
+        "phone": "फोन", "services": "सर्व्हिसेस", "founder": "संस्थापक", "namaskar": "नमस्कार",
+        "shroff": "श्रॉफ", "shikayche": "शिकायचे", "pahije": "पाहिजे"
+    };
+
+    result = result.replace(/\b[a-zA-Z]+\b/g, function (match) {
+        const lower = match.toLowerCase();
+        return wordMap[lower] || match;
+    });
+
+    return result;
+}
+
 async function sendMessage() {
-    const text = input.value.trim();
-    if (!text) return;
+    const rawText = input.value.trim();
+    if (!rawText) return;
+
+    const lang = detectLanguage(rawText);
+    let displayText = rawText;
+
+    if (lang === "hi" && /[a-zA-Z]/.test(rawText)) {
+        displayText = transliterateHinglishToHindi(rawText);
+    } else if (lang === "mr" && /[a-zA-Z]/.test(rawText)) {
+        displayText = transliterateHinglishToMarathi(rawText);
+    }
 
     // User message
     const userMessage = document.createElement("div");
     userMessage.className = "message user-message";
     userMessage.innerHTML = `
-        <div class="message-bubble">${text}</div>
+        <div class="message-bubble">${displayText}</div>
     `;
     messages.appendChild(userMessage);
 
@@ -51,7 +172,7 @@ async function sendMessage() {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                message: text
+                message: displayText
             })
         });
 
