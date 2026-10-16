@@ -121,27 +121,51 @@ body {
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
+.header-action-btn,
 .clear-chat-btn {
     border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.12);
     color: #ffffff;
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 500;
-    padding: 5px 12px;
+    padding: 5px 9px;
     cursor: pointer;
     transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    gap: 5px;
     line-height: 1;
+    text-decoration: none;
+    height: 28px;
 }
 
+.header-action-btn:hover,
 .clear-chat-btn:hover {
     background: rgba(255, 255, 255, 0.24);
     border-color: rgba(255, 255, 255, 0.45);
+    color: #ffffff;
+}
+
+.whatsapp-btn {
+    background: rgba(37, 211, 102, 0.2) !important;
+    border-color: rgba(37, 211, 102, 0.45) !important;
+    color: #25d366 !important;
+}
+
+.whatsapp-btn:hover {
+    background: #25d366 !important;
+    color: #ffffff !important;
+    border-color: #25d366 !important;
+}
+
+.sound-btn.is-muted {
+    opacity: 0.55;
 }
 
 /* ===================================================
@@ -373,7 +397,8 @@ body {
 }
 
 .tts-speak-btn,
-.msg-copy-btn {
+.msg-copy-btn,
+.msg-feedback-btn {
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -396,6 +421,47 @@ body {
     color: #007ea7;
     border-color: #93c5fd;
     transform: translateY(-1px);
+}
+
+.msg-feedback-btn:hover {
+    background: #f8fafc;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+
+.msg-feedback-btn.is-active-like {
+    background: #dcfce7 !important;
+    color: #15803d !important;
+    border-color: #86efac !important;
+}
+
+.msg-feedback-btn.is-active-dislike {
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+    border-color: #fca5a5 !important;
+}
+
+.ai-action-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    padding: 6px 12px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #007ea7, #004b70);
+    color: #ffffff !important;
+    font-size: 11.5px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 126, 167, 0.25);
+    transition: all 0.2s ease;
+}
+
+.ai-action-chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 126, 167, 0.35);
+    background: linear-gradient(135deg, #006b8f, #003652);
 }
 
 .tts-speak-btn.is-speaking {

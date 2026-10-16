@@ -1,6 +1,109 @@
 const input = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 const messages = document.getElementById("chatMessages");
+const downloadChatBtn = document.getElementById("downloadChatBtn");
+const soundToggleBtn = document.getElementById("soundToggleBtn");
+
+let isSoundEnabled = localStorage.getItem("chat_sound_enabled") !== "false";
+function updateSoundBtnUI() {
+    if (!soundToggleBtn) return;
+    if (isSoundEnabled) {
+        soundToggleBtn.classList.remove("is-muted");
+        soundToggleBtn.title = "Sound: ON (क्लिक करून म्यूट करा)";
+        soundToggleBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+        `;
+    } else {
+        soundToggleBtn.classList.add("is-muted");
+        soundToggleBtn.title = "Sound: OFF (क्लिक करून चालू करा)";
+        soundToggleBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <line x1="23" y1="9" x2="17" y2="15"></line>
+                <line x1="17" y1="9" x2="23" y2="15"></line>
+            </svg>
+        `;
+    }
+}
+
+if (soundToggleBtn) {
+    updateSoundBtnUI();
+    soundToggleBtn.addEventListener("click", () => {
+        isSoundEnabled = !isSoundEnabled;
+        localStorage.setItem("chat_sound_enabled", isSoundEnabled ? "true" : "false");
+        updateSoundBtnUI();
+    });
+}
+
+function playSubtleAudio(type) {
+    if (!isSoundEnabled) return;
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        const now = ctx.currentTime;
+        if (type === "send") {
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(500, now);
+            osc.frequency.exponentialRampToValueAtTime(700, now + 0.05);
+            gain.gain.setValueAtTime(0.06, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            osc.start(now);
+            osc.stop(now + 0.05);
+        } else {
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(520, now);
+            osc.frequency.exponentialRampToValueAtTime(840, now + 0.08);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc.start(now);
+            osc.stop(now + 0.08);
+        }
+    } catch (_) {}
+}
+
+if (downloadChatBtn) {
+    downloadChatBtn.addEventListener("click", function () {
+        const chatRows = messages.querySelectorAll(".message");
+        if (chatRows.length === 0) {
+            alert("No conversation history to download yet.");
+            return;
+        }
+
+        let transcript = "=======================================================\n";
+        transcript += "NMD INFOTECH SERVICES - AI CHAT TRANSCRIPT\n";
+        transcript += `Exported: ${new Date().toLocaleString()}\n`;
+        transcript += "Website: https://www.nmdinfotechservices.com/\n";
+        transcript += "Official WhatsApp & Phone: +91 9049442717 / +91 8830498811\n";
+        transcript += "Registered Office: Office No. 11, 2nd Floor, Aditya Centeegra, FC Road, Shivajinagar, Pune 411005\n";
+        transcript += "=======================================================\n\n";
+
+        chatRows.forEach(row => {
+            const isUser = row.classList.contains("user-message");
+            const bubble = row.querySelector(".message-bubble");
+            if (bubble && !bubble.classList.contains("typing")) {
+                transcript += `[${isUser ? "User" : "NMD AI Assistant"}]:\n${bubble.textContent.trim()}\n\n`;
+            }
+        });
+
+        const blob = new Blob([transcript], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `NMD_Chat_Transcript_${new Date().toISOString().slice(0, 10)}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+}
 
 function formatResponseText(rawText) {
     if (!rawText) return "";
@@ -282,6 +385,59 @@ function appendTTSButton(aiMessageElement, replyText) {
 
     actionsDiv.appendChild(copyBtn);
 
+    // Thumbs Up Feedback Button
+    const likeBtn = document.createElement("button");
+    likeBtn.type = "button";
+    likeBtn.className = "msg-feedback-btn";
+    likeBtn.title = "Helpful answer (उपयुक्त उत्तर)";
+    likeBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+        </svg>
+    `;
+
+    // Thumbs Down Feedback Button
+    const dislikeBtn = document.createElement("button");
+    dislikeBtn.type = "button";
+    dislikeBtn.className = "msg-feedback-btn";
+    dislikeBtn.title = "Not helpful";
+    dislikeBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path>
+        </svg>
+    `;
+
+    likeBtn.addEventListener("click", () => {
+        likeBtn.classList.add("is-active-like");
+        likeBtn.title = "Thanks for your feedback!";
+        dislikeBtn.classList.remove("is-active-dislike");
+        dislikeBtn.disabled = true;
+    });
+
+    dislikeBtn.addEventListener("click", () => {
+        dislikeBtn.classList.add("is-active-dislike");
+        dislikeBtn.title = "Feedback noted. We will improve!";
+        likeBtn.classList.remove("is-active-like");
+        likeBtn.disabled = true;
+    });
+
+    actionsDiv.appendChild(likeBtn);
+    actionsDiv.appendChild(dislikeBtn);
+
+    // Smart Lead Capture Action Chip for services/fees/contact inquiries
+    if (/fee|fees|फीस|फी|admission|प्रवेश|course|courses|कोर्स|contact|संपर्क|address|पत्ता|9049442717|call|कॉल|consulting|शिका/i.test(replyText)) {
+        const leadChip = document.createElement("a");
+        leadChip.className = "ai-action-chip";
+        leadChip.href = "https://wa.me/919049442717?text=Hello%20NMD%20Infotech%2C%20I%20would%20like%20to%20connect%20regarding%20courses%20and%20services";
+        leadChip.target = "_blank";
+        leadChip.rel = "noopener noreferrer";
+        leadChip.innerHTML = `
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+            <span>Connect on WhatsApp</span>
+        `;
+        actionsDiv.appendChild(leadChip);
+    }
+
     const wrap = aiMessageElement.querySelector(".ai-bubble-wrap");
     if (wrap) {
         wrap.appendChild(actionsDiv);
@@ -312,6 +468,8 @@ async function sendMessage() {
         <div class="message-bubble">${displayText}</div>
     `;
     messages.appendChild(userMessage);
+
+    playSubtleAudio("send");
 
     input.value = "";
     sendBtn.disabled = true;
@@ -355,12 +513,14 @@ async function sendMessage() {
         bubble.classList.remove("typing");
         finalFormatted = formatResponseText(data.response);
         bubble.textContent = finalFormatted;
+        playSubtleAudio("receive");
     }
     catch (error) {
         const bubble = aiMessage.querySelector(".message-bubble");
         bubble.classList.remove("typing");
         finalFormatted = "Error - " + error.message;
         bubble.textContent = finalFormatted;
+        playSubtleAudio("receive");
     }
     finally {
         sendBtn.disabled = false;
