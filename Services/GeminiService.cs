@@ -31,11 +31,14 @@ namespace ChatBoatAI.Services
             _httpClient.Timeout = TimeSpan.FromSeconds(45);
         }
 
-        // Read knowledge from TXT file safely from multiple possible locations
+        // Read knowledge from MD or TXT file safely from multiple possible locations
         private string GetKnowledge()
         {
             var paths = new[]
             {
+                Path.Combine(Directory.GetCurrentDirectory(), "Data", "KnowledgeBase.md"),
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "KnowledgeBase.md"),
+                Path.Combine(Directory.GetCurrentDirectory(), "KnowledgeBase.md"),
                 Path.Combine(Directory.GetCurrentDirectory(), "Data", "KnowledgeBase.txt"),
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "KnowledgeBase.txt"),
                 Path.Combine(Directory.GetCurrentDirectory(), "KnowledgeBase.txt")
@@ -45,7 +48,18 @@ namespace ChatBoatAI.Services
             {
                 if (File.Exists(path))
                 {
-                    return File.ReadAllText(path);
+                    try
+                    {
+                        var content = File.ReadAllText(path);
+                        if (!string.IsNullOrWhiteSpace(content))
+                        {
+                            return content;
+                        }
+                    }
+                    catch
+                    {
+                        // Safely continue to next path if read error occurs
+                    }
                 }
             }
 
