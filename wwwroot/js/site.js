@@ -2,72 +2,6 @@ const input = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 const messages = document.getElementById("chatMessages");
 const downloadChatBtn = document.getElementById("downloadChatBtn");
-const soundToggleBtn = document.getElementById("soundToggleBtn");
-
-let isSoundEnabled = localStorage.getItem("chat_sound_enabled") !== "false";
-function updateSoundBtnUI() {
-    if (!soundToggleBtn) return;
-    if (isSoundEnabled) {
-        soundToggleBtn.classList.remove("is-muted");
-        soundToggleBtn.title = "Sound: ON (क्लिक करून म्यूट करा)";
-        soundToggleBtn.innerHTML = `
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            </svg>
-        `;
-    } else {
-        soundToggleBtn.classList.add("is-muted");
-        soundToggleBtn.title = "Sound: OFF (क्लिक करून चालू करा)";
-        soundToggleBtn.innerHTML = `
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                <line x1="23" y1="9" x2="17" y2="15"></line>
-                <line x1="17" y1="9" x2="23" y2="15"></line>
-            </svg>
-        `;
-    }
-}
-
-if (soundToggleBtn) {
-    updateSoundBtnUI();
-    soundToggleBtn.addEventListener("click", () => {
-        isSoundEnabled = !isSoundEnabled;
-        localStorage.setItem("chat_sound_enabled", isSoundEnabled ? "true" : "false");
-        updateSoundBtnUI();
-    });
-}
-
-function playSubtleAudio(type) {
-    if (!isSoundEnabled) return;
-    try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) return;
-        const ctx = new AudioCtx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        const now = ctx.currentTime;
-        if (type === "send") {
-            osc.type = "sine";
-            osc.frequency.setValueAtTime(500, now);
-            osc.frequency.exponentialRampToValueAtTime(700, now + 0.05);
-            gain.gain.setValueAtTime(0.06, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-            osc.start(now);
-            osc.stop(now + 0.05);
-        } else {
-            osc.type = "triangle";
-            osc.frequency.setValueAtTime(520, now);
-            osc.frequency.exponentialRampToValueAtTime(840, now + 0.08);
-            gain.gain.setValueAtTime(0.08, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-            osc.start(now);
-            osc.stop(now + 0.08);
-        }
-    } catch (_) {}
-}
 
 if (downloadChatBtn) {
     downloadChatBtn.addEventListener("click", function () {
@@ -469,8 +403,6 @@ async function sendMessage() {
     `;
     messages.appendChild(userMessage);
 
-    playSubtleAudio("send");
-
     input.value = "";
     sendBtn.disabled = true;
     sendBtn.classList.add("is-sending");
@@ -513,14 +445,12 @@ async function sendMessage() {
         bubble.classList.remove("typing");
         finalFormatted = formatResponseText(data.response);
         bubble.textContent = finalFormatted;
-        playSubtleAudio("receive");
     }
     catch (error) {
         const bubble = aiMessage.querySelector(".message-bubble");
         bubble.classList.remove("typing");
         finalFormatted = "Error - " + error.message;
         bubble.textContent = finalFormatted;
-        playSubtleAudio("receive");
     }
     finally {
         sendBtn.disabled = false;
