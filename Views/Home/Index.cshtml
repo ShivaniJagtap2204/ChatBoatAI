@@ -20,7 +20,7 @@
 
         <div class="header-actions">
             <button type="button" id="clearChatBtn" class="clear-chat-btn">
-                🗑️ Clear
+                Clear
             </button>
         </div>
     </div>  
@@ -31,7 +31,7 @@
                 <img src="/images/company-logo.png.png" alt="NMD Infotech Logo" onerror="this.src='/images/company-logo.png';" />
             </div>
 
-            <h2>Welcome to NMD Infotech! 👋</h2>
+            <h2>Welcome to NMD Infotech</h2>
             <p>
                 I am your AI Assistant for <strong>NMD Infotech Services</strong>.<br />
                 Ask me about our IT solutions, custom software, app development, or get in touch with our team!
@@ -39,19 +39,19 @@
 
             <div class="suggestion-buttons">
                 <button onclick="sendSuggestion('What services does NMD Infotech provide?')">
-                    🌐 Our Services
+                    Our Services
                 </button>
 
                 <button onclick="sendSuggestion('Tell me about Web and App Development')">
-                    💻 Web & Mobile Apps
+                    Web & Mobile Apps
                 </button> 
 
                 <button onclick="sendSuggestion('Tell me about Data Science and Analytics')">
-                    📊 Data Analytics
+                    Data Analytics
                 </button>
 
                 <button onclick="sendSuggestion('What is your office address and contact number?')">
-                    📍 Contact & Office
+                    Contact & Office
                 </button>
             </div>
         </div>
@@ -67,7 +67,11 @@
         </button>
 
         <button type="button" id="micBtn" class="mic-btn" title="Voice Input" aria-label="Voice Input">
-            🎤
+            <svg class="mic-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
+                <line x1="12" y1="18" x2="12" y2="22"></line>
+            </svg>
         </button>
 
         <button id="sendBtn">

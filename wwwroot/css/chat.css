@@ -51,12 +51,12 @@ body {
     height: 44px;
     min-width: 44px;
     border-radius: 12px;
-    background: #0d47a1;
+    background: #474747;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(13, 71, 161, 0.25);
+    box-shadow: 0 4px 12px rgba(71, 71, 71, 0.25);
 }
 
 .header-icon img {
@@ -202,11 +202,11 @@ body {
 }
 
 .suggestion-buttons button:hover {
-    background: #eff6ff;
-    border-color: #0d47a1;
-    color: #0d47a1;
+    background: #f8fafc;
+    border-color: #474747;
+    color: #474747;
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(13, 71, 161, 0.12);
+    box-shadow: 0 4px 10px rgba(71, 71, 71, 0.12);
 }
 
 /* Message Rows */
@@ -238,10 +238,10 @@ body {
 }
 
 .user-message .message-bubble {
-    background: #0d47a1 !important;
+    background: #474747 !important;
     color: #ffffff !important;
     border-radius: 18px 18px 4px 18px;
-    box-shadow: 0 3px 10px rgba(13, 71, 161, 0.18);
+    box-shadow: 0 3px 10px rgba(71, 71, 71, 0.22);
 }
 
 .ai-message .message-bubble {
@@ -257,14 +257,14 @@ body {
     height: 36px;
     min-width: 36px;
     border-radius: 50%;
-    background: #0d47a1;
+    background: #474747;
     color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 11px;
     font-weight: 700;
-    box-shadow: 0 3px 8px rgba(13, 71, 161, 0.2);
+    box-shadow: 0 3px 8px rgba(71, 71, 71, 0.25);
 }
 
 /* Typing animation */
@@ -279,7 +279,7 @@ body {
 .typing span {
     width: 7px;
     height: 7px;
-    background: #0d47a1;
+    background: #474747;
     border-radius: 50%;
     animation: typing 1.4s infinite ease-in-out;
 }
@@ -404,9 +404,9 @@ body {
 }
 
 .chat-input input:focus {
-    border-color: #0d47a1;
+    border-color: #474747;
     background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.12);
+    box-shadow: 0 0 0 3px rgba(71, 71, 71, 0.12);
 }
 
 .chat-input button {
@@ -415,19 +415,19 @@ body {
     padding: 0 20px;
     border: none;
     border-radius: 25px;
-    background: #0d47a1;
+    background: #474747;
     color: #ffffff;
     font-size: 14.5px;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(13, 71, 161, 0.25);
+    box-shadow: 0 4px 12px rgba(71, 71, 71, 0.25);
     transition: all 0.2s ease;
 }
 
 .chat-input button:hover {
-    background: #1565c0;
+    background: #373b3e;
     transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(13, 71, 161, 0.3);
+    box-shadow: 0 6px 16px rgba(71, 71, 71, 0.3);
 }
 
 .chat-input button:active {
@@ -449,7 +449,7 @@ body {
     border: 1px solid #cbd5e1;
     border-radius: 50%;
     background: #f8fafc;
-    color: #0d47a1;
+    color: #474747;
     font-size: 20px;
     display: flex;
     align-items: center;
@@ -459,11 +459,11 @@ body {
 }
 
 .chat-input .mic-btn:hover {
-    background: #eff6ff;
-    border-color: #0d47a1;
-    color: #0d47a1;
+    background: #f1f5f9;
+    border-color: #474747;
+    color: #474747;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(13, 71, 161, 0.15);
+    box-shadow: 0 4px 12px rgba(71, 71, 71, 0.15);
 }
 
 .chat-input .mic-btn.listening {
@@ -493,7 +493,7 @@ body {
     border: 1px solid #cbd5e1;
     border-radius: 19px;
     background: #f1f5f9;
-    color: #0d47a1;
+    color: #474747;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
@@ -507,7 +507,7 @@ body {
 
 .chat-input .mic-lang-btn:hover {
     background: #e2e8f0;
-    border-color: #0d47a1;
+    border-color: #474747;
     transform: translateY(-1px);
 }
 

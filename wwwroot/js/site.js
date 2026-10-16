@@ -379,7 +379,7 @@ if (clearChatBtn) {
                     <img src="/images/company-logo.png.png" alt="NMD Logo" onerror="this.src='/images/company-logo.png';" />
                 </div>
 
-                <h2>Welcome to NMD Infotech! 👋</h2>
+                <h2>Welcome to NMD Infotech</h2>
 
                 <p>
                     I am your AI Assistant for <strong>NMD Infotech Services</strong>.<br />
@@ -388,19 +388,19 @@ if (clearChatBtn) {
 
                 <div class="suggestion-buttons">
                     <button onclick="sendSuggestion('What services does NMD Infotech provide?')">
-                        🌐 Our Services
+                        Our Services
                     </button>
 
                     <button onclick="sendSuggestion('Tell me about Web and App Development')">
-                        💻 Web & Mobile Apps
+                        Web & Mobile Apps
                     </button>
 
                     <button onclick="sendSuggestion('Tell me about Data Science and Analytics')">
-                        📊 Data Analytics
+                        Data Analytics
                     </button>
 
                     <button onclick="sendSuggestion('What is your office address and contact number?')">
-                        📍 Contact & Office
+                        Contact & Office
                     </button>
                 </div>
             </div>
