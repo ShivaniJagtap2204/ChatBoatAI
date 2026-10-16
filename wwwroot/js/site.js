@@ -231,27 +231,57 @@ if ("speechSynthesis" in window && window.speechSynthesis.onvoiceschanged !== un
 }
 
 function appendTTSButton(aiMessageElement, replyText) {
-    if (!replyText || !("speechSynthesis" in window)) return null;
+    if (!replyText) return null;
 
     const actionsDiv = document.createElement("div");
     actionsDiv.className = "ai-bubble-actions";
 
-    const speakBtn = document.createElement("button");
-    speakBtn.type = "button";
-    speakBtn.className = "tts-speak-btn";
-    speakBtn.title = "Listen to answer (ऐका / सुनिए / Listen)";
-    speakBtn.innerHTML = `
-        <svg class="tts-icon-speaker" viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
-            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+    let speakBtn = null;
+    if ("speechSynthesis" in window) {
+        speakBtn = document.createElement("button");
+        speakBtn.type = "button";
+        speakBtn.className = "tts-speak-btn";
+        speakBtn.title = "Listen to answer (ऐका / सुनिए / Listen)";
+        speakBtn.innerHTML = `
+            <svg class="tts-icon-speaker" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            </svg>
+            <span class="tts-label">Listen</span>
+        `;
+
+        speakBtn.addEventListener("click", () => {
+            speakText(replyText, speakBtn);
+        });
+
+        actionsDiv.appendChild(speakBtn);
+    }
+
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.className = "msg-copy-btn";
+    copyBtn.title = "Copy response";
+    copyBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
         </svg>
-        <span class="tts-label">Listen</span>
+        <span class="copy-label">Copy</span>
     `;
 
-    speakBtn.addEventListener("click", () => {
-        speakText(replyText, speakBtn);
+    copyBtn.addEventListener("click", () => {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(replyText).then(() => {
+                const label = copyBtn.querySelector(".copy-label");
+                if (label) {
+                    label.textContent = "Copied!";
+                    setTimeout(() => { label.textContent = "Copy"; }, 2000);
+                }
+            }).catch(() => {});
+        }
     });
 
-    actionsDiv.appendChild(speakBtn);
+    actionsDiv.appendChild(copyBtn);
+
     const wrap = aiMessageElement.querySelector(".ai-bubble-wrap");
     if (wrap) {
         wrap.appendChild(actionsDiv);
@@ -284,8 +314,8 @@ async function sendMessage() {
     messages.appendChild(userMessage);
 
     input.value = "";
-    sendBtn.textContent = "Sending...";
     sendBtn.disabled = true;
+    sendBtn.classList.add("is-sending");
 
     // AI message with typing animation inside wrapper
     const aiMessage = document.createElement("div");
@@ -333,8 +363,8 @@ async function sendMessage() {
         bubble.textContent = finalFormatted;
     }
     finally {
-        sendBtn.textContent = "Send";
         sendBtn.disabled = false;
+        sendBtn.classList.remove("is-sending");
         messages.scrollTop = messages.scrollHeight;
     }
 
@@ -387,20 +417,24 @@ if (clearChatBtn) {
                 </p>
 
                 <div class="suggestion-buttons">
-                    <button onclick="sendSuggestion('What services does NMD Infotech provide?')">
-                        Our Services
+                    <button type="button" class="suggestion-chip" onclick="sendSuggestion('What services does NMD Infotech provide?')">
+                        <span>Our Services</span>
+                        <span class="chip-arrow">→</span>
                     </button>
 
-                    <button onclick="sendSuggestion('Tell me about Web and App Development')">
-                        Web & Mobile Apps
+                    <button type="button" class="suggestion-chip" onclick="sendSuggestion('Tell me about Web and App Development')">
+                        <span>Web &amp; Mobile Apps</span>
+                        <span class="chip-arrow">→</span>
                     </button>
 
-                    <button onclick="sendSuggestion('Tell me about Data Science and Analytics')">
-                        Data Analytics
+                    <button type="button" class="suggestion-chip" onclick="sendSuggestion('Tell me about Data Science and Analytics')">
+                        <span>Data Analytics</span>
+                        <span class="chip-arrow">→</span>
                     </button>
 
-                    <button onclick="sendSuggestion('What is your office address and contact number?')">
-                        Contact & Office
+                    <button type="button" class="suggestion-chip" onclick="sendSuggestion('What is your office address and contact number?')">
+                        <span>Contact &amp; Office</span>
+                        <span class="chip-arrow">→</span>
                     </button>
                 </div>
             </div>
@@ -432,7 +466,7 @@ if (!micLangBtn && sendBtn && sendBtn.parentElement) {
     micLangBtn = document.createElement("button");
     micLangBtn.type = "button";
     micLangBtn.id = "micLangBtn";
-    micLangBtn.className = "mic-lang-btn";
+    micLangBtn.className = "mic-lang-pill";
     micLangBtn.title = getVoiceLangTitle(currentVoiceLang);
     micLangBtn.textContent = getVoiceLangLabel(currentVoiceLang);
     sendBtn.parentElement.insertBefore(micLangBtn, sendBtn);
@@ -442,10 +476,10 @@ if (!micBtn && sendBtn && sendBtn.parentElement) {
     micBtn = document.createElement("button");
     micBtn.type = "button";
     micBtn.id = "micBtn";
-    micBtn.className = "mic-btn";
+    micBtn.className = "mic-icon-btn";
     micBtn.title = "Voice Input";
     micBtn.setAttribute("aria-label", "Voice Input");
-    micBtn.innerHTML = "🎤";
+    micBtn.innerHTML = `<svg class="mic-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v1a7 7 0 0 1-14 0v-1"></path><line x1="12" y1="18" x2="12" y2="22"></line></svg>`;
     sendBtn.parentElement.insertBefore(micBtn, sendBtn);
 }
 
