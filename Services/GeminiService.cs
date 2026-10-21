@@ -133,21 +133,35 @@ RESPONSE INSTRUCTIONS & FORMATTING RULES:
    - {langInstruction}
    - Never mix languages. An English question MUST receive an English response. A Hindi question MUST receive a Hindi response. A Marathi question MUST receive a Marathi response.
 
-2. COMPANY / WEBSITE / COURSES / SERVICES QUESTIONS:
+2. ADAPTIVE ANSWER LENGTH DIRECTIVE (CRITICAL - SHORT BY DEFAULT):
+   - ALWAYS PROVIDE SHORT, DIRECT, CRISP ANSWERS (1 to 3 clear sentences) BY DEFAULT.
+   - Do NOT produce long paragraphs or dump unnecessary information unless the user specifically asks for it.
+   - SPECIFIC DIRECT QUESTIONS:
+     * 'Who is NMD?' / 'NMD kon ahet?': Answer directly in 1-2 short sentences that Mr. Navnath Mohan Darekar (NMD) is the Founder & Director of NMD Infotech Services and The Digital NMD, an entrepreneur, Business Analyst, and author of 'Revamping Business with Modern Marketing', awarded 'The Tycoon Of Maharashtra 2024'.
+     * 'What is NMD full form?' / 'NMD cha full form': Answer directly that NMD stands for Navnath Mohan Darekar.
+     * Course fees: Answer directly with the exact listed fee and duration.
+   - DETAILED EXPLANATION ONLY WHEN REQUESTED:
+     * Only if the user specifically asks to 'explain in detail', 'briefly explain', 'give full details', 'tell me more', 'सविस्तर सांगा', 'विस्तार से बताइए', should you provide an extensive, structured, in-depth breakdown.
+
+3. HUMAN-LIKE CONVERSATIONAL TONE & WARMTH:
+   - Speak naturally, warmly, and empathetically like a friendly, professional human expert.
+   - Avoid sounding robotic, cold, or mechanical. Express genuine warmth, helpfulness, and conversational ease.
+
+4. COMPANY / WEBSITE / COURSES / SERVICES QUESTIONS:
    - If the user asks about NMD Infotech Services, The Digital NMD, courses (Digital Marketing ₹25,000, Data Analytics ₹45,000, Data Science ₹85,000, Cloud, DevOps, Cyber Security), syllabus, fees, duration, placement support (170+ hiring partners, highest package up to 22 LPA), founder (Mr. Navnath Mohan Darekar), IT services (Web Development, App Development, Data Science, Data Analysis, Digital Marketing, Game Development, Business Consulting), corporate clients and testimonials (including JP Shroff / Jaiprakash Pravinchandra Shroff, Kolte Patil, MCA, Baramati Agro), or office address and contacts, STRICTLY use the KNOWLEDGE BASE provided above as your primary source of truth.
    - For contact information: Phone/WhatsApp +91 9049442717 / +91 8830498811, Email: info@nmdinfotechservices.com, Office: Office No. 11, Second Floor, Aditya Centeegra, FC Road, Shivajinagar, Pune 411005.
 
-3. GENERAL QUESTIONS (OUTSIDE COMPANY SCOPE):
+5. GENERAL QUESTIONS (OUTSIDE COMPANY SCOPE):
    - If the user asks ANY question that is NOT related to the company or website (e.g. general knowledge, programming, Python, coding, science, mathematics, definitions, interview questions, or general help), answer it directly, accurately, and helpfully using your own general Gemini AI intelligence!
    - Do NOT say 'this information is not in the knowledge base' for general topics. Always provide a helpful and complete answer.
 
-4. STRICTLY NO .NET REFERENCES:
+6. STRICTLY NO .NET REFERENCES:
    - Do NOT mention .NET, ASP.NET, ASP.NET Core, or C# anywhere in your answers unless the user explicitly asks about them.
 
-5. STRICTLY NO STARS OR ASTERISKS:
+7. STRICTLY NO STARS OR ASTERISKS:
    - Do NOT use markdown bold asterisks (** or *). Never output asterisk characters in your response.
 
-6. FORMATTING & TONE:
+8. FORMATTING & TONE:
    - Use clean, well-spaced paragraphs.
    - For lists, use simple bullet points like '• ' or numbers (1, 2, 3) or dashes (-).
    - Keep answers professional, polite, warm, and easy to read.
@@ -472,6 +486,65 @@ RESPONSE INSTRUCTIONS & FORMATTING RULES:
                 return true;
             }
 
+            if (simple.Contains("full form") || simple.Contains("ful form") || simple.Contains("फुल फॉर्म") || simple.Contains("पूर्ण रूप") || simple.Contains("पूर्ण नाव"))
+            {
+                if (lang == "hi")
+                {
+                    reply = "NMD का फुल फॉर्म (पूरा नाम) 'नवनाथ मोहन दरेकर' (Navnath Mohan Darekar) है। वे NMD Infotech Services और The Digital NMD के संस्थापक और डायरेक्टर हैं।";
+                }
+                else if (lang == "mr")
+                {
+                    reply = "NMD चा फुल फॉर्म (पूर्ण नाव) 'नवनाथ मोहन दरेकर' (Navnath Mohan Darekar) असा आहे. ते NMD Infotech Services आणि The Digital NMD चे संस्थापक व संचालक आहेत।";
+                }
+                else
+                {
+                    reply = "The full form of NMD is Navnath Mohan Darekar (Founder and Director of NMD Infotech Services / The Digital NMD).";
+                }
+                return true;
+            }
+
+            bool isWhoIsNmd = simple == "who is nmd" || simple == "who is nmd sir" || simple == "nmd kon ahet" || simple == "nmd kon ahe" ||
+                              simple == "nmd kaun hai" || simple == "nmd kaun hain" || simple == "who is navnath darekar" || simple == "navnath darekar kon ahet" ||
+                              simple == "एनएमडी कोण आहेत" || simple == "nmd कोण आहेत" || simple == "एनएमडी कौन हैं" || simple == "नवनाथ दरेकर कोण आहेत";
+
+            if (isWhoIsNmd)
+            {
+                bool isDetailed = simple.Contains("briefly") || simple.Contains("detail") || simple.Contains("details") || simple.Contains("explain") ||
+                                  simple.Contains("सविस्तर") || simple.Contains("विस्तार") || simple.Contains("संपूर्ण") || simple.Contains("expand");
+
+                if (!isDetailed)
+                {
+                    if (lang == "hi")
+                    {
+                        reply = "NMD यानी श्री नवनाथ मोहन दरेकर (Navnath Mohan Darekar) हैं। वे NMD Infotech Services और The Digital NMD के संस्थापक व डायरेक्टर, बिज़नेस एनालिस्ट, उद्यमी और 'द टायकून ऑफ महाराष्ट्र 2024' पुरस्कार विजेता हैं।\n\n(विस्तार से जानने के लिए 'सविस्तर सांगा' या 'Explain in detail' पूछें)";
+                    }
+                    else if (lang == "mr")
+                    {
+                        reply = "एनएमडी (NMD) म्हणजे श्री. नवनाथ मोहन दरेकर (Navnath Mohan Darekar). ते NMD Infotech Services आणि The Digital NMD चे संस्थापक व संचालक, बिझनेस अ‍ॅनालिस्ट, उद्योजक आणि 'द टायकून ऑफ महाराष्ट्र 2024' पुरस्कार विजेते आहेत।\n\n(अधिक सविस्तर माहितीसाठी 'सविस्तर सांगा' किंवा 'Explain in detail' असे विचारा)";
+                    }
+                    else
+                    {
+                        reply = "Mr. Navnath Mohan Darekar (globally recognized as NMD) is the Founder and Director of NMD Infotech Services and The Digital NMD. He is an entrepreneur, Business Analyst, author of 'Revamping Business with Modern Marketing', and recipient of 'The Tycoon Of Maharashtra 2024' award.\n\n(For an in-depth profile, you can ask 'Explain in detail')";
+                    }
+                }
+                else
+                {
+                    if (lang == "hi")
+                    {
+                        reply = "NMD Infotech Services के संस्थापक और डायरेक्टर श्री नवनाथ मोहन दरेकर (Navnath Mohan Darekar - NMD) का विस्तृत परिचय:\n\n• पद एवं अनुभव: वे एक सफल उद्यमी, डायरेक्टर और बिज़नेस एनालिस्ट हैं, जिनके पास सॉफ्टवेयर इंजीनियरिंग, क्लाउड कंप्यूटिंग और डिजिटल ट्रांसफॉर्मेशन का गहरा अनुभव है।\n• राज्यस्तरीय सम्मान: उन्हें 2024 में प्रसिद्ध भारतीय अभिनेत्री श्रीमती हृता दुर्गुळे द्वारा 'द टायकून ऑफ महाराष्ट्र 2024' (The Tycoon Of Maharashtra) पुरस्कार से सम्मानित किया गया है।\n• लेखक: वे लोकप्रिय बिजनेस पुस्तक 'Revamping Business with Modern Marketing' के लेखक हैं।\n• उद्देश्य: युवा डेवलपर्स को आधुनिक तकनीक में प्रशिक्षित करना और व्यवसायों को स्केलेबल डिजिटल सॉल्यूशंस प्रदान करना।";
+                    }
+                    else if (lang == "mr")
+                    {
+                        reply = "NMD Infotech Services चे संस्थापक आणि संचालक श्री. नवनाथ मोहन दरेकर (Navnath Mohan Darekar - NMD) यांचा सविस्तर परिचय:\n\n• पद व अनुभव: ते एक उद्योजक, संचालक आणि बिझनेस अ‍ॅनालिस्ट असून त्यांच्याकडे सॉफ्टवेअर इंजिनिअरिंग, क्लाउड कम्प्युटिंग आणि डिजिटल ट्रान्सफॉर्मेशनचे सखोल ज्ञान आहे।\n• राज्यस्तरीय सन्मान: त्यांना 2024 मध्ये लोकप्रिय अभिनेत्री सौ. हृता दुर्गुळे यांच्या हस्ते 'द टायकून ऑफ महाराष्ट्र 2024' (The Tycoon Of Maharashtra) पुरस्काराने सन्मानित करण्यात आले आहे।\n• लेखक: ते 'Revamping Business with Modern Marketing' या लोकप्रिय बिझनेस पुस्तकाचे लेखक आहेत।\n• ध्येय: तरुण विद्यार्थ्यांना आधुनिक आयटी क्षेत्रात सक्षम करणे आणि उद्योगांना सर्वोत्तम सॉफ्टवेअर सोल्यूशन्स देणे।";
+                    }
+                    else
+                    {
+                        reply = "Detailed Profile of Mr. Navnath Mohan Darekar (globally known as NMD), Founder & Director of NMD Infotech Services:\n\n• Role & Expertise: Visionary entrepreneur, Director, and Business Analyst with strong foundations in software engineering, cloud architecture, and enterprise digital transformation.\n• Award & Recognition: Honored with 'The Tycoon Of Maharashtra of the Year 2024' award for Best Businessman of the Year, presented by celebrated Indian actress Mrs. Hruta Durgule.\n• Author: Author of the acclaimed business book 'Revamping Business with Modern Marketing', available on Amazon and Flipkart.\n• Leadership Vision: Mentoring aspiring developers through career programs and delivering scalable IT solutions to global enterprises.";
+                    }
+                }
+                return true;
+            }
+
             if (simple.Contains("jp shroff") || simple.Contains("shroff") || simple.Contains("जे पी श्रॉफ") || simple.Contains("जेपी श्रॉफ") || simple.Contains("श्रॉफ"))
             {
                 if (lang == "hi")
@@ -501,26 +574,26 @@ RESPONSE INSTRUCTIONS & FORMATTING RULES:
             bool hasDevanagari = Regex.IsMatch(text, @"[\u0900-\u097F]");
             if (hasDevanagari)
             {
-                // Marathi unique character ळ (\u0933), ॅ, ऑ and common Marathi verbs/words
-                if (Regex.IsMatch(text, @"[ळॅऑ]") || Regex.IsMatch(text, @"आहे|आहेत|किती|कुठे|कसा|कशी|कसे|सांग|सांगा|हवी|हवे|हवं|द्या|करा|माहिती|पत्ता|तपशील|काय|नमस्कार|शुल्क|होय|नाही|कोणते|कोणती|कोण|पाहिजे|शिकायचे|शिकायला|प्रवेश|फी"))
+                // Marathi unique character ळ (\u0933), ॅ, ऑ and common Marathi verbs/words/suffixes
+                if (Regex.IsMatch(text, @"[ळॅऑ]") || Regex.IsMatch(text, @"आहे|आहेत|किती|कुठे|कसा|कशी|कसे|सांग|सांगा|हवी|हवे|हवं|द्या|करा|माहिती|पत्ता|तपशील|काय|नमस्कार|शुल्क|होय|नाही|नको|कोणते|कोणती|कोण|पाहिजे|शिकायचे|शिकायला|प्रवेश|फी|बद्दल|विषयी|फुल\s*फॉर्म|सविस्तर|थोडक्यात"))
                 {
                     return "mr";
                 }
                 // Hindi verbs/words
-                if (Regex.IsMatch(text, @"है|हैं|कितनी|कितना|कितने|कहाँ|कहा|कैसे|कैसा|कैसी|बताओ|बताइए|बताएं|चाहिए|दीजिए|दीजिये|नमस्ते|जानकारी|क्या|शुक्रिया|धन्यवाद|होगी|होगा|होंगे|सकते|सकती|सकता|रहते|रहती|करना|मुझको|मुझे|आपको|कब|कौन|कौनसा|कौनसी|फीस"))
+                if (Regex.IsMatch(text, @"है|हैं|कितनी|कितना|कितने|कहाँ|कहा|कैसे|कैसा|कैसी|बताओ|बताइए|बताएं|चाहिए|दीजिए|दीजिये|नमस्ते|जानकारी|क्या|शुक्रिया|धन्यवाद|होगी|होगा|होंगे|सकते|सकती|सकता|रहते|रहती|करना|मुझको|मुझे|आपको|कब|कौन|कौनसा|कौनसी|फीस|बारे|विस्तार|संक्षेप"))
                 {
                     return "hi";
                 }
                 return "mr";
             }
 
-            // 2. Transliterated Marathi vs Hindi words
-            if (Regex.IsMatch(lower, @"\b(kiti|ahe|ahet|kuthe|sang|sanga|kasa|kashi|kase|namaskar|mahiti|tula|mala|amhi|tumhi|kadhi|vichar|patta|shulk|deto|deta|karto|karu|shiku|pahije|nave|kay|ka|kon|konte|konti|madhe|var|khali|sangto|sangshil|dya)\b"))
+            // 2. Transliterated Marathi vs Hindi words (includes cha, chi, che, chya, baddal, kon, etc.)
+            if (Regex.IsMatch(lower, @"\b(kiti|ahe|ahet|aahe|aahet|kuthe|kute|sang|sanga|kasa|kashi|kase|namaskar|mahiti|tula|mala|amhi|tumhi|tumcha|tumchi|tumche|kadhi|kadi|vichar|patta|shulk|deto|deta|karto|karu|shiku|pahije|nave|kay|kaay|ka|kon|konte|konti|kontya|madhe|made|var|khali|sangto|sangshil|dya|baddal|badal|vishayi|nko|ani|pan|pn|tar|tr|mag|mg|cha|chi|che|chya|shikayche|shikaycha|savitstar)\b"))
             {
                 return "mr";
             }
 
-            if (Regex.IsMatch(lower, @"\b(kitna|kitni|kitne|hai|hain|kaha|kahan|kaise|kaisa|kaisi|batao|bataiye|chahiye|namaste|dijiye|kya|shukriya|dhanyavad|kare|karega|karenge|mujhe|humko|aapko|hogi|hoga|honge|kab|kaun|kaunsa|kaunsi|karta|karti|karte)\b"))
+            if (Regex.IsMatch(lower, @"\b(kitna|kitni|kitne|hai|hain|kaha|kahan|kaise|kaisa|kaisi|batao|bataiye|chahiye|namaste|dijiye|kya|shukriya|dhanyavad|kare|karega|karenge|mujhe|humko|aapko|aapka|aapki|aapke|hogi|hoga|honge|kab|kaun|kaunsa|kaunsi|karta|karti|karte|bare|mein)\b"))
             {
                 return "hi";
             }
