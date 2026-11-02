@@ -8,7 +8,7 @@
     <div class="chat-header">
         <div class="header-left">
             <div class="header-icon">
-                <img src="/images/company-logo.png.png" alt="NMD" onerror="this.style.display='none'; this.parentElement.querySelector('.header-text-icon').style.display='flex';" />
+                <img src="/images/nmd-logo.png" alt="NMD" onerror="if(!this.dataset.f){this.dataset.f='1';this.src='/images/company-logo.png.png';}else{this.style.display='none';this.parentElement.querySelector('.header-text-icon').style.display='flex';}" />
                 <div class="header-text-icon" style="display:none;">NMD</div>
             </div>
 
@@ -28,7 +28,7 @@
     <div id="chatMessages" class="chat-messages">
         <div class="welcome-message">
             <div class="welcome-icon">
-                <img src="/images/company-logo.png.png" alt="NMD Infotech Logo" onerror="this.src='/images/company-logo.png';" />
+                <img src="/images/nmd-logo.png" alt="NMD Infotech Logo" onerror="this.src='/images/company-logo.png.png';" />
             </div>
 
             <h2>Welcome to NMD Infotech</h2>
@@ -58,8 +58,48 @@
                     <span class="chip-arrow">→</span>
                 </button>
             </div>
+
+            <!-- Quick Connect & Lead Action Hub -->
+            <div class="nmd-quick-connect-hub">
+                <div class="connect-hub-header">
+                    <span class="hub-dot"></span>
+                    <span>Quick Connect &amp; Support Hub</span>
+                </div>
+                <div class="connect-hub-grid">
+                    <a href="https://wa.me/919049442717?text=Hi%20NMD%20Infotech,%20I%20am%20interested%20in%20your%20courses/services" target="_blank" rel="noopener noreferrer" class="hub-action-card hub-card-wa" title="Chat live on WhatsApp">
+                        <span class="hub-icon-circle">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-5.46-4.45-9.92-9.91-9.92zm5.78 14.02c-.24.68-1.39 1.3-1.92 1.38-.49.08-1.12.11-3.64-.93-3.21-1.32-5.28-4.57-5.44-4.78-.16-.21-1.3-1.73-1.3-3.3 0-1.57.82-2.34 1.11-2.66.29-.32.63-.4.84-.4.21 0 .42 0 .6.01.19.01.45-.07.7.53.26.63.89 2.16.97 2.32.08.16.13.35.03.56-.1.21-.16.34-.32.53-.16.19-.34.42-.49.56-.16.15-.33.32-.14.65.19.32.84 1.38 1.8 2.24 1.24 1.1 2.28 1.44 2.61 1.6.32.16.51.13.7-.08.19-.21.82-.95 1.04-1.28.22-.32.43-.27.73-.16.29.11 1.87.88 2.19 1.04.32.16.53.24.61.37.08.13.08.77-.16 1.45z"/></svg>
+                        </span>
+                        <div class="hub-label-wrap">
+                            <strong>WhatsApp</strong>
+                            <small>Chat Live</small>
+                        </div>
+                    </a>
+                    <a href="tel:+919049442717" class="hub-action-card hub-card-call" title="Call Helpline directly">
+                        <span class="hub-icon-circle">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                        </span>
+                        <div class="hub-label-wrap">
+                            <strong>Call Helpline</strong>
+                            <small>+91 9049442717</small>
+                        </div>
+                    </a>
+                    <button type="button" class="hub-action-card hub-card-form" onclick="showInquiryForm()" title="Open NMD Official Inquiry Form">
+                        <span class="hub-icon-circle">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </span>
+                        <div class="hub-label-wrap">
+                            <strong>Quick Inquiry</strong>
+                            <small>Free Counseling</small>
+                        </div>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Dedicated Sibling Inquiry View (Zero Gaps, Auto-dismiss) -->
+    <div id="nmdInquiryView" class="nmd-inquiry-view" style="display:none;"></div>
 
     <div class="chat-input-wrap">
         <div class="chat-input-capsule">

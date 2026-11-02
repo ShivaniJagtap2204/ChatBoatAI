@@ -42,7 +42,6 @@ if (downloadChatBtn) {
 function formatResponseText(rawText) {
     if (!rawText) return "";
 
-    // 1. Remove all markdown asterisks (**bold** and *italic* and bullet *)
     let text = rawText
         .replace(/\*\*/g, "")
         .replace(/\*/g, "")
@@ -189,22 +188,39 @@ function getBestVoiceForLanguage(langCode) {
     const target = (langCode || "en-IN").toLowerCase();
     const prefix = target.split("-")[0];
 
-    // 1. Exact match e.g. "mr-in", "hi-in", "en-in"
-    let match = voices.find(v => v.lang && v.lang.toLowerCase() === target);
+    // Expressive Natural / Neural / Human-sounding voices
+    const isNatural = v => /natural|neural|online|multilingual|swara|aarohi|madhur|neerja|prabhat|google/i.test(v.name);
+    const isRobotic = v => /desktop|sapi|david|zira|ravi desktop|heera desktop/i.test(v.name);
+
+    // 1. Language exact match with an expressive Natural / Neural voice
+    let match = voices.find(v => v.lang && v.lang.toLowerCase() === target && isNatural(v) && !isRobotic(v));
     if (match) return match;
 
-    // 2. Prefix match e.g. starts with "mr", "hi", "en"
-    match = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(prefix));
+    // 2. Language prefix match with Natural / Neural voice
+    match = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(prefix) && isNatural(v) && !isRobotic(v));
     if (match) return match;
 
-    // 3. Fallback for Marathi: if no Marathi voice on device, use Hindi voice
-    if (prefix === "mr") {
-        match = voices.find(v => v.lang && v.lang.toLowerCase().startsWith("hi"));
+    // 3. Natural Marathi or Hindi voice
+    if (prefix === "mr" || prefix === "hi") {
+        match = voices.find(v => /marathi|hindi|aarohi|swara|madhur|kalpana/i.test(v.name) && isNatural(v));
+        if (match) return match;
+        match = voices.find(v => v.lang && (v.lang.toLowerCase().startsWith("mr") || v.lang.toLowerCase().startsWith("hi")) && isNatural(v));
         if (match) return match;
     }
 
-    // 4. Fallback to English (India) or first available voice
-    return voices.find(v => v.lang && v.lang.toLowerCase().includes("in")) || voices[0] || null;
+    // 4. Natural Indian English female/male voice (e.g. Neerja, Prabhat)
+    match = voices.find(v => (v.name.includes("Neerja") || v.name.includes("Prabhat") || v.lang === "en-IN") && isNatural(v));
+    if (match) return match;
+
+    // 5. Any Natural voice available on device
+    match = voices.find(v => isNatural(v));
+    if (match) return match;
+
+    // 6. Regular fallback
+    match = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(prefix) && !isRobotic(v));
+    if (match) return match;
+
+    return voices.find(v => !isRobotic(v)) || voices[0] || null;
 }
 
 function speakText(text, btnElement) {
@@ -219,24 +235,31 @@ function speakText(text, btnElement) {
 
     stopSpeaking();
 
+    const detected = detectLanguage(text);
+    let langCode = "en-IN";
+    if (detected === "mr") langCode = "mr-IN";
+    else if (detected === "hi") langCode = "hi-IN";
+
+    // Natural human speech preprocessing
     let speechString = text
+        .replace(/https?:\/\/[^\s]+/gi, detected === "mr" ? "अधिकृत वेबसाईटवर" : detected === "hi" ? "आधिकारिक वेबसाइट पर" : "on our official website")
         .replace(/•/g, " ")
-        .replace(/₹/g, "Rupees ")
+        .replace(/₹\s*([0-9,]+)/g, (m, num) => detected === "mr" || detected === "hi" ? `${num} रुपये` : `${num} Rupees`)
+        .replace(/₹/g, detected === "mr" || detected === "hi" ? " रुपये " : " Rupees ")
+        .replace(/\bNMD\b/g, detected === "mr" || detected === "hi" ? "एन.एम.डी." : "N.M.D.")
+        .replace(/\bAI\b/g, detected === "mr" || detected === "hi" ? "ए.आय." : "A.I.")
         .replace(/[\u{1F300}-\u{1F9FF}]/gu, " ")
+        .replace(/[*#_~`\[\]()]/g, " ")
+        .replace(/\s+/g, " ")
         .replace(/\n+/g, ". ")
         .trim();
 
     if (!speechString) return;
 
-    const detected = detectLanguage(speechString);
-    let langCode = "en-IN";
-    if (detected === "mr") langCode = "mr-IN";
-    else if (detected === "hi") langCode = "hi-IN";
-
     const utterance = new SpeechSynthesisUtterance(speechString);
     utterance.lang = langCode;
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+    utterance.rate = 0.94;
+    utterance.pitch = 1.05;
 
     const voice = getBestVoiceForLanguage(langCode);
     if (voice) {
@@ -319,7 +342,6 @@ function appendTTSButton(aiMessageElement, replyText) {
 
     actionsDiv.appendChild(copyBtn);
 
-    // Thumbs Up Feedback Button
     const likeBtn = document.createElement("button");
     likeBtn.type = "button";
     likeBtn.className = "msg-feedback-btn";
@@ -330,7 +352,6 @@ function appendTTSButton(aiMessageElement, replyText) {
         </svg>
     `;
 
-    // Thumbs Down Feedback Button
     const dislikeBtn = document.createElement("button");
     dislikeBtn.type = "button";
     dislikeBtn.className = "msg-feedback-btn";
@@ -358,20 +379,6 @@ function appendTTSButton(aiMessageElement, replyText) {
     actionsDiv.appendChild(likeBtn);
     actionsDiv.appendChild(dislikeBtn);
 
-    // Smart Lead Capture Action Chip for services/fees/contact inquiries
-    if (/fee|fees|फीस|फी|admission|प्रवेश|course|courses|कोर्स|contact|संपर्क|address|पत्ता|9049442717|call|कॉल|consulting|शिका/i.test(replyText)) {
-        const leadChip = document.createElement("a");
-        leadChip.className = "ai-action-chip";
-        leadChip.href = "https://wa.me/919049442717?text=Hello%20NMD%20Infotech%2C%20I%20would%20like%20to%20connect%20regarding%20courses%20and%20services";
-        leadChip.target = "_blank";
-        leadChip.rel = "noopener noreferrer";
-        leadChip.innerHTML = `
-            <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-            <span>Connect on WhatsApp</span>
-        `;
-        actionsDiv.appendChild(leadChip);
-    }
-
     const wrap = aiMessageElement.querySelector(".ai-bubble-wrap");
     if (wrap) {
         wrap.appendChild(actionsDiv);
@@ -382,7 +389,174 @@ function appendTTSButton(aiMessageElement, replyText) {
     return speakBtn;
 }
 
+// ===================================================
+// INQUIRY & COUNSELING FORM SYSTEM
+// ===================================================
+function closeInquiryForm() {
+    const inquiryView = document.getElementById("nmdInquiryView");
+    const chatMsgs = document.getElementById("chatMessages");
+    if (inquiryView) {
+        inquiryView.style.display = "none";
+        inquiryView.innerHTML = "";
+    }
+    if (chatMsgs) {
+        chatMsgs.style.display = "flex";
+    }
+}
+
+function showInquiryForm() {
+    const inquiryView = document.getElementById("nmdInquiryView");
+    const chatMsgs = document.getElementById("chatMessages");
+    if (!inquiryView || !chatMsgs) return;
+
+    chatMsgs.style.display = "none";
+    inquiryView.style.display = "flex";
+
+    inquiryView.innerHTML = `
+        <div class="inquiry-header-bar">
+            <button type="button" class="inquiry-back-btn" onclick="closeInquiryForm()" title="Back to Chat">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <span>Back to Chat</span>
+            </button>
+            <button type="button" class="inquiry-close-x" onclick="closeInquiryForm()" title="Close Form">✕</button>
+        </div>
+
+        <div class="inquiry-company-card">
+            <div class="inquiry-co-header">
+                <img src="/images/nmd-logo.png" alt="NMD Logo" class="inquiry-co-logo" onerror="this.src='/images/company-logo.png.png';" />
+                <div class="inquiry-co-info">
+                    <h4>NMD Infotech Services Pvt. Ltd.</h4>
+                    <p>FC Road, Shivajinagar, Pune • Official Inquiry Desk</p>
+                </div>
+            </div>
+            <div class="inquiry-contact-chips">
+                <span>📍 FC Road, Pune</span>
+                <span>•</span>
+                <span>📞 +91 9049442717</span>
+                <span>•</span>
+                <span>✉️ info@nmdinfotechservices.com</span>
+            </div>
+        </div>
+
+        <form id="nmdOfficialInquiryForm" class="inquiry-main-form" onsubmit="handleInquirySubmit(event, this)">
+            <div class="inquiry-field">
+                <label>Full Name <span class="req">*</span></label>
+                <input type="text" name="client_name" required placeholder="e.g. Navnath Darekar" autocomplete="name" />
+            </div>
+
+            <div class="inquiry-field">
+                <label>Mobile / WhatsApp Number <span class="req">*</span></label>
+                <input type="tel" name="client_phone" required pattern="[0-9]{10}" maxlength="10" placeholder="10-digit mobile number" autocomplete="tel" />
+            </div>
+
+            <div class="inquiry-field">
+                <label>Interested Service / Course <span class="req">*</span></label>
+                <select name="client_service">
+                    <option value="Data Science & AI Training">Data Science &amp; AI Training (₹85k / 8 Mo)</option>
+                    <option value="Data Analytics Training">Data Analytics (Power BI, SQL, Python)</option>
+                    <option value="Full Stack Web Development">Full Stack Web &amp; Mobile App Development</option>
+                    <option value="Custom Software Development">Custom Software Development</option>
+                    <option value="Digital Marketing & AI">Digital Marketing &amp; AI Growth Tools</option>
+                    <option value="General IT Consulting">General IT Consulting / Career Counseling</option>
+                </select>
+            </div>
+
+            <div class="inquiry-field">
+                <label>Preferred Mode</label>
+                <select name="client_mode">
+                    <option value="Pune Classroom (FC Road)">Pune Classroom (FC Road, Pune)</option>
+                    <option value="Live Online Interactive">Live Online Interactive</option>
+                    <option value="Weekend Fast-Track Batch">Weekend Fast-Track Batch</option>
+                </select>
+            </div>
+
+            <div class="inquiry-actions">
+                <button type="submit" class="inquiry-submit-btn">
+                    <span>Submit Inquiry to NMD Team</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+            </div>
+
+            <div class="inquiry-alt-connect">
+                <span>Prefer immediate counseling?</span>
+                <a href="https://wa.me/919049442717?text=Hi%20NMD%20Infotech,%20I%20have%20an%20inquiry%20regarding%20courses/services" target="_blank" rel="noopener noreferrer" class="inquiry-wa-direct">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-5.46-4.45-9.92-9.91-9.92zm5.78 14.02c-.24.68-1.39 1.3-1.92 1.38-.49.08-1.12.11-3.64-.93-3.21-1.32-5.28-4.57-5.44-4.78-.16-.21-1.3-1.73-1.3-3.3 0-1.57.82-2.34 1.11-2.66.29-.32.63-.4.84-.4.21 0 .42 0 .6.01.19.01.45-.07.7.53.26.63.89 2.16.97 2.32.08.16.13.35.03.56-.1.21-.16.34-.32.53-.16.19-.34.42-.49.56-.16.15-.33.32-.14.65.19.32.84 1.38 1.8 2.24 1.24 1.1 2.28 1.44 2.61 1.6.32.16.51.13.7-.08.19-.21.82-.95 1.04-1.28.22-.32.43-.27.73-.16.29.11 1.87.88 2.19 1.04.32.16.53.24.61.37.08.13.08.77-.16 1.45z"/></svg>
+                    <span>Chat on WhatsApp (+91 9049442717)</span>
+                </a>
+            </div>
+
+            <div class="inquiry-trust-strip">
+                🔒 Official NMD Infotech Portal • 100% Confidential
+            </div>
+        </form>
+    `;
+
+    setTimeout(function () {
+        const nameInput = inquiryView.querySelector('input[name="client_name"]');
+        if (nameInput) nameInput.focus();
+    }, 100);
+}
+
+function handleInquirySubmit(e, form) {
+    e.preventDefault();
+    const name = form.client_name.value.trim();
+    const phone = form.client_phone.value.trim();
+    const service = form.client_service.value;
+    const mode = form.client_mode ? form.client_mode.value : "Classroom Pune";
+
+    if (!name || phone.length !== 10 || isNaN(phone)) {
+        alert("Please enter a valid 10-digit mobile number.");
+        return;
+    }
+
+    try {
+        const leads = JSON.parse(localStorage.getItem("nmd_chat_leads") || "[]");
+        leads.push({ name: name, phone: phone, service: service, mode: mode, date: new Date().toLocaleString() });
+        localStorage.setItem("nmd_chat_leads", JSON.stringify(leads));
+    } catch (_) {}
+
+    const inquiryView = document.getElementById("nmdInquiryView");
+    if (inquiryView) {
+        inquiryView.innerHTML = `
+            <div class="inquiry-success-view">
+                <div class="inquiry-success-icon">✓</div>
+                <h3>Inquiry Received Successfully!</h3>
+                <p>Thank you, <strong>${name}</strong>! Your inquiry for <strong>${service}</strong> (${mode}) has been logged with our Pune office. Our senior counselor will connect with you at <strong>+91 ${phone}</strong> within 15–30 minutes.</p>
+                <div class="inquiry-success-sub">Returning to chat in a moment...</div>
+            </div>
+        `;
+    }
+
+    setTimeout(function () {
+        closeInquiryForm();
+
+        const confMsg = document.createElement("div");
+        confMsg.className = "message ai-message";
+        confMsg.innerHTML = `
+            <div class="ai-icon" title="NMD Infotech">
+                <img src="/images/nmd-logo.png" alt="NMD" onerror="this.src='/images/company-logo.png.png';" />
+            </div>
+            <div class="ai-bubble-wrap">
+                <div class="message-bubble" style="border-left: 3px solid #10b981;">
+                    <strong>Inquiry Received!</strong> Thank you, <strong>${name}</strong>. Your inquiry for <em>${service}</em> (${mode}) has been recorded. Our counselor from FC Road, Pune will contact you at <strong>+91 ${phone}</strong> shortly.
+                </div>
+            </div>
+        `;
+        messages.appendChild(confMsg);
+        messages.scrollTop = messages.scrollHeight;
+    }, 1500);
+}
+
+// Make inquiry form accessible globally
+window.showInquiryForm = showInquiryForm;
+window.closeInquiryForm = closeInquiryForm;
+window.handleInquirySubmit = handleInquirySubmit;
+
 async function sendMessage() {
+    if (typeof closeInquiryForm === "function") {
+        closeInquiryForm();
+    }
+
     const rawText = input.value.trim();
     if (!rawText) return;
 
@@ -411,7 +585,9 @@ async function sendMessage() {
     const aiMessage = document.createElement("div");
     aiMessage.className = "message ai-message";
     aiMessage.innerHTML = `
-        <div class="ai-icon">NMD</div>
+        <div class="ai-icon" title="NMD Infotech">
+            <img src="/images/nmd-logo.png" alt="NMD" onerror="if(!this.dataset.f){this.dataset.f='1';this.src='/images/company-logo.png.png';}else{this.style.display='none';this.parentElement.textContent='NMD';}" />
+        </div>
         <div class="ai-bubble-wrap">
             <div class="message-bubble typing">
                 <span></span>
@@ -487,48 +663,17 @@ function sendSuggestion(text) {
     input.value = text;
     sendMessage();
 }
+window.sendSuggestion = sendSuggestion;
 
 const clearChatBtn = document.getElementById("clearChatBtn");
 
 if (clearChatBtn) {
     clearChatBtn.addEventListener("click", function () {
         stopSpeaking();
-        messages.innerHTML = `
-            <div class="welcome-message">
-                <div class="welcome-icon">
-                    <img src="/images/company-logo.png.png" alt="NMD Logo" onerror="this.src='/images/company-logo.png';" />
-                </div>
-
-                <h2>Welcome to NMD Infotech</h2>
-
-                <p>
-                    I am your AI Assistant for <strong>NMD Infotech Services</strong>.<br />
-                    Ask me about our IT solutions, custom software, app development, or get in touch with our team!
-                </p>
-
-                <div class="suggestion-buttons">
-                    <button type="button" class="suggestion-chip" onclick="sendSuggestion('What services does NMD Infotech provide?')">
-                        <span>Our Services</span>
-                        <span class="chip-arrow">→</span>
-                    </button>
-
-                    <button type="button" class="suggestion-chip" onclick="sendSuggestion('Tell me about Web and App Development')">
-                        <span>Web &amp; Mobile Apps</span>
-                        <span class="chip-arrow">→</span>
-                    </button>
-
-                    <button type="button" class="suggestion-chip" onclick="sendSuggestion('Tell me about Data Science and Analytics')">
-                        <span>Data Analytics</span>
-                        <span class="chip-arrow">→</span>
-                    </button>
-
-                    <button type="button" class="suggestion-chip" onclick="sendSuggestion('What is your office address and contact number?')">
-                        <span>Contact &amp; Office</span>
-                        <span class="chip-arrow">→</span>
-                    </button>
-                </div>
-            </div>
-        `;
+        if (typeof closeInquiryForm === "function") {
+            closeInquiryForm();
+        }
+        location.reload();
     });
 }
 
@@ -536,7 +681,6 @@ if (clearChatBtn) {
 let micBtn = document.getElementById("micBtn");
 let micLangBtn = document.getElementById("micLangBtn");
 
-// Selected voice language: default to Marathi (mr-IN), support Hindi (hi-IN) and English (en-IN)
 let currentVoiceLang = localStorage.getItem("chat_mic_lang") || "mr-IN";
 
 function getVoiceLangLabel(lang) {
@@ -551,7 +695,6 @@ function getVoiceLangTitle(lang) {
     return "Current Voice Language: English (क्लिक करून मराठी करा)";
 }
 
-// If the Razor view hasn't been rebuilt yet, inject the mic buttons dynamically next to Send button
 if (!micLangBtn && sendBtn && sendBtn.parentElement) {
     micLangBtn = document.createElement("button");
     micLangBtn.type = "button";
@@ -569,11 +712,10 @@ if (!micBtn && sendBtn && sendBtn.parentElement) {
     micBtn.className = "mic-icon-btn";
     micBtn.title = "Voice Input";
     micBtn.setAttribute("aria-label", "Voice Input");
-    micBtn.innerHTML = `<svg class="mic-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v1a7 7 0 0 1-14 0v-1"></path><line x1="12" y1="18" x2="12" y2="22"></line></svg>`;
+    micBtn.innerHTML = `<svg class="mic-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v1a7 7 0 0 1-14 0v-1"></path><line x1="12" y1="18" x2="12" y2="22"></line></svg>`;
     sendBtn.parentElement.insertBefore(micBtn, sendBtn);
 }
 
-// Update language button text
 function updateLangButtonUI() {
     if (micLangBtn) {
         micLangBtn.textContent = getVoiceLangLabel(currentVoiceLang);
@@ -594,7 +736,6 @@ if (micLangBtn) {
         localStorage.setItem("chat_mic_lang", currentVoiceLang);
         updateLangButtonUI();
 
-        // If currently listening, restart with new language
         if (isListening && recognition) {
             recognition.stop();
             setTimeout(function () {
@@ -605,80 +746,6 @@ if (micLangBtn) {
 }
 
 if (micBtn) {
-    // Ensure mic and language button styles are applied even if chat.css is cached
-    if (!document.getElementById("micBtnStyles")) {
-        const style = document.createElement("style");
-        style.id = "micBtnStyles";
-        style.textContent = `
-            .chat-input .mic-lang-btn {
-                height: 38px !important;
-                min-width: 60px !important;
-                padding: 0 10px !important;
-                border: 1px solid #cbd5e1 !important;
-                border-radius: 19px !important;
-                background: #f1f5f9 !important;
-                color: #0d47a1 !important;
-                font-size: 13px !important;
-                font-weight: 700 !important;
-                cursor: pointer !important;
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-                transition: all 0.2s ease !important;
-                display: inline-flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                flex-shrink: 0 !important;
-            }
-            .chat-input .mic-lang-btn:hover {
-                background: #e2e8f0 !important;
-                border-color: #0d47a1 !important;
-                transform: translateY(-1px) !important;
-            }
-            .chat-input .mic-btn {
-                width: 50px !important;
-                height: 50px !important;
-                min-width: 50px !important;
-                padding: 0 !important;
-                border: 1px solid #cbd5e1 !important;
-                border-radius: 50% !important;
-                background: #f8fafc !important;
-                color: #0d47a1 !important;
-                font-size: 20px !important;
-                display: inline-flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
-                flex-shrink: 0 !important;
-                cursor: pointer !important;
-            }
-            .chat-input .mic-btn:hover {
-                background: #eff6ff !important;
-                border-color: #0d47a1 !important;
-                transform: translateY(-1px) !important;
-            }
-            .chat-input .mic-btn.listening {
-                background: #ef4444 !important;
-                border-color: #ef4444 !important;
-                color: #ffffff !important;
-                animation: micPulse 1.5s infinite !important;
-            }
-            @media (max-width: 768px) {
-                .chat-input .mic-lang-btn {
-                    height: 36px !important;
-                    min-width: 52px !important;
-                    font-size: 12px !important;
-                    padding: 0 6px !important;
-                }
-                .chat-input .mic-btn {
-                    width: 44px !important;
-                    height: 44px !important;
-                    min-width: 44px !important;
-                    font-size: 18px !important;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const defaultPlaceholder = input.placeholder;
     var isListening = false;
@@ -719,8 +786,8 @@ if (micBtn) {
 
             recognition = new SpeechRecognition();
             recognition.continuous = true;
-            recognition.interimResults = true; // LIVE REAL-TIME transcription while user is speaking!
-            recognition.lang = currentVoiceLang; // "mr-IN" for Marathi or "en-IN" for English
+            recognition.interimResults = true;
+            recognition.lang = currentVoiceLang;
 
             initialTextBeforeMic = input.value.trim();
             finalTranscript = "";
@@ -736,7 +803,6 @@ if (micBtn) {
                     : "🎤 Listening... Words are appearing live";
             };
 
-            // Stream words in real-time into the text box as they are spoken
             recognition.onresult = function (event) {
                 let interimTranscript = "";
 
@@ -762,7 +828,6 @@ if (micBtn) {
                     input.scrollLeft = input.scrollWidth;
                 }
 
-                // Silence detection: stop listening after pause, but DO NOT auto-send!
                 if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
                 speechSilenceTimer = setTimeout(function () {
                     if (isListening && recognition) {
@@ -908,7 +973,6 @@ if (micBtn) {
                 ? "🎤 मराठीत बोला (थांबण्यासाठी पुन्हा 🎤 दाबा)"
                 : "🎤 Speaking... Click 🎤 to stop";
 
-            // Fast silence detection stops 900ms after user finishes speaking
             try {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
                 if (AudioCtx) {
@@ -940,7 +1004,6 @@ if (micBtn) {
                 }
             } catch (e) { }
 
-            // Safety timeout after 8 seconds
             maxRecordTimer = setTimeout(function () {
                 stopMediaRecording();
             }, 8000);
