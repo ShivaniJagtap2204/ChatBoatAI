@@ -804,24 +804,19 @@ if (micBtn) {
             };
 
             recognition.onresult = function (event) {
-                let interimTranscript = "";
+                let finalStr = "";
+                let interimStr = "";
 
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    const chunk = event.results[i][0].transcript;
+                for (let i = 0; i < event.results.length; ++i) {
                     if (event.results[i].isFinal) {
-                        finalTranscript += chunk + " ";
+                        finalStr += event.results[i][0].transcript + " ";
                     } else {
-                        interimTranscript += chunk;
+                        interimStr += event.results[i][0].transcript;
                     }
                 }
 
-                let currentSpoken = (finalTranscript + interimTranscript).trim();
+                let currentSpoken = (finalStr + interimStr).trim();
                 if (currentSpoken) {
-                    if (currentVoiceLang === "hi-IN" && /[a-zA-Z]/.test(currentSpoken)) {
-                        currentSpoken = transliterateHinglishToHindi(currentSpoken);
-                    } else if (currentVoiceLang === "mr-IN" && /[a-zA-Z]/.test(currentSpoken)) {
-                        currentSpoken = transliterateHinglishToMarathi(currentSpoken);
-                    }
                     input.value = (initialTextBeforeMic ? initialTextBeforeMic + " " : "") + currentSpoken;
                     lastInputWasVoice = true;
                     input.focus();
@@ -830,16 +825,18 @@ if (micBtn) {
 
                 if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
                 speechSilenceTimer = setTimeout(function () {
-                    if (isListening && recognition) {
-                        try { recognition.stop(); } catch (_) {}
+                    if (isListening) {
+                        if (recognition) {
+                            try { recognition.stop(); } catch (_) {}
+                        }
                         resetMicUI();
                         input.focus();
                     }
-                }, 1800);
+                }, 3500);
             };
 
             recognition.onerror = function (event) {
-                if (event.error === "no-speech") {
+                if (event.error === "no-speech" || event.error === "aborted") {
                     return;
                 }
                 resetMicUI();
@@ -852,6 +849,12 @@ if (micBtn) {
             };
 
             recognition.onend = function () {
+                if (isListening && recognition) {
+                    try {
+                        recognition.start();
+                        return;
+                    } catch (_) {}
+                }
                 resetMicUI();
                 input.focus();
             };
