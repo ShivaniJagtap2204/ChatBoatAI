@@ -16,10 +16,9 @@ namespace ChatBoatAI.Services
         // Models to try in order (ensures high availability without 503 errors)
         private static readonly string[] AvailableModels = new[]
         {
-            "gemini-2.5-flash",
-            "gemini-2.5-flash-lite",
+            "gemini-flash-lite-latest",
             "gemini-flash-latest",
-            "gemini-2.5-pro"
+            "gemini-pro-latest"
         };
 
         public GeminiService(HttpClient httpClient, IConfiguration configuration, IMemoryCache cache)
