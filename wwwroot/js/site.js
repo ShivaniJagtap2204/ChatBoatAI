@@ -849,12 +849,6 @@ if (micBtn) {
             };
 
             recognition.onend = function () {
-                if (isListening && recognition) {
-                    try {
-                        recognition.start();
-                        return;
-                    } catch (_) {}
-                }
                 resetMicUI();
                 input.focus();
             };
